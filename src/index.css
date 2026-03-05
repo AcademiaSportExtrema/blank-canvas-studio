@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Sistema de Metas - Design System Corporativo */
+/* Tema: Sidebar escura, conteúdo claro, status coloridos */
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 220 14% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 14% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 14% 10%;
+
+    --primary: 220 14% 10%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 220 13% 91%;
+    --secondary-foreground: 220 14% 10%;
+
+    --muted: 220 13% 95%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 220 13% 91%;
+    --accent-foreground: 220 14% 10%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 87%;
+    --input: 220 13% 87%;
+    --ring: 220 14% 10%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar escura */
+    --sidebar-background: 220 14% 10%;
+    --sidebar-foreground: 220 13% 91%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 220 14% 10%;
+    --sidebar-accent: 220 14% 16%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 220 14% 18%;
+    --sidebar-ring: 220 14% 30%;
+
+    /* Cores de status */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* Cores para gráficos */
+    --chart-1: 199 89% 48%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 0 72% 51%;
+    --chart-5: 262 83% 58%;
+  }
+
+  .dark {
+    --background: 220 14% 8%;
+    --foreground: 220 13% 95%;
+
+    --card: 220 14% 12%;
+    --card-foreground: 220 13% 95%;
+
+    --popover: 220 14% 12%;
+    --popover-foreground: 220 13% 95%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 220 14% 10%;
+
+    --secondary: 220 14% 20%;
+    --secondary-foreground: 220 13% 95%;
+
+    --muted: 220 14% 18%;
+    --muted-foreground: 220 9% 55%;
+
+    --accent: 220 14% 20%;
+    --accent-foreground: 220 13% 95%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 14% 20%;
+    --input: 220 14% 20%;
+    --ring: 220 13% 70%;
+
+    --sidebar-background: 220 14% 6%;
+    --sidebar-foreground: 220 13% 91%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 12%;
+    --sidebar-accent-foreground: 220 13% 95%;
+    --sidebar-border: 220 14% 14%;
+    --sidebar-ring: 199 89% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+/* Tabelas densas para dados */
+@layer components {
+  .table-dense th,
+  .table-dense td {
+    @apply px-3 py-2 text-sm;
+  }
+
+  .table-dense th {
+    @apply font-semibold text-muted-foreground;
+  }
+}
+
+/* Scrollbar customizada */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-muted/30;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+}
