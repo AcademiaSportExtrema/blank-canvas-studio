@@ -58,15 +58,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Find user by email
-    const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({
-      filter: `email.eq.${email}`,
-      page: 1,
-      perPage: 1,
-    });
-    if (listError) throw listError;
-
-    const targetUser = users?.[0];
+    // Find user by email — paginate through all users
+    let targetUser: any = null;
+    let page = 1;
+    const perPage = 500;
+    while (!targetUser) {
+      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({ page, perPage });
+      if (listError) throw listError;
+      if (!users || users.length === 0) break;
+      targetUser = users.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+      if (users.length < perPage) break;
+      page++;
+    }
     if (!targetUser) {
       return new Response(JSON.stringify({ error: 'Usuário com este email não encontrado' }), {
         status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
