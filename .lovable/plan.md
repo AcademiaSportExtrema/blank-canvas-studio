@@ -1,58 +1,36 @@
 
-Diagnóstico
 
-O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
+## Diagnóstico
 
-Onde isso acontece
-1. `src/pages/Upload.tsx`
-- Após concluir o upload, a tela chama `ai-analista` automaticamente.
+O hash de deduplicação na Edge Function `upload-importar-xls` usa apenas estes campos:
 
-2. `src/components/AnalistaIaCard.tsx`
-- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
-- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
+```
+empresa | matricula | produto | data_lancamento | valor | resp_venda | numero_contrato
+```
 
-O ponto que criou a duplicidade
-- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
-- Então qualquer lugar que execute `ai-analista` agora também envia email.
+**`forma_pagamento` e `condicao_pagamento` NÃO fazem parte do hash.** Isso significa que se o mesmo contrato aparece duas vezes no Excel com formas de pagamento diferentes (ex: "CARTÃO RECORRENTE" e "PIX INTER"), a segunda linha é descartada como duplicata, pois gera o mesmo hash.
 
-Por que isso vira 2 emails
-- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
-- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
-- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
-- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
+Nos dados do dia 05/03, vários contratos têm uma entrada com `forma_pagamento = "PIX INTER"` que foi importada, enquanto a entrada correspondente com `forma_pagamento = "CARTÃO RECORRENTE"` (valor 149,00) foi ignorada como duplicata.
 
-O que encontrei que confirma isso
-- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
-- Não há email duplicado no cadastro de destinatários.
-- O padrão da imagem (08:01 e 08:18) bate exatamente com:
-  - um disparo ao abrir Dashboard
-  - outro disparo após o upload
+## Plano
 
-Conclusão
-- O problema não está no cadastro de emails dos gestores.
-- O problema está no acoplamento entre “gerar análise” e “enviar email”.
-- Hoje o sistema envia email tanto:
-  - quando a análise é gerada pelo Dashboard
-  - quanto quando a análise é gerada após o upload
+### 1. Corrigir o hash de deduplicação
 
-Correção recomendada
-- Deixar o envio automático acontecer apenas no fluxo de upload.
-- E impedir que a geração automática do card no Dashboard dispare email.
+Adicionar `forma_pagamento` à string do hash na Edge Function, para que linhas com mesmos dados mas formas de pagamento diferentes sejam tratadas como registros distintos.
 
-Forma mais segura de corrigir
-- Passar um parâmetro explícito no `ai-analista`, por exemplo:
-  - `trigger_email: true` no upload
-  - `trigger_email: false` no Dashboard
-- Assim:
-  - abrir Dashboard gera/atualiza análise sem email
-  - upload concluído gera análise com email automático
-  - botão manual continua sendo reenvio manual
+Linha 152 do `upload-importar-xls/index.ts`:
+```typescript
+// Antes:
+const hashStr = `${lancamento.empresa}|${lancamento.matricula}|${lancamento.produto}|${lancamento.data_lancamento}|${lancamento.valor}|${lancamento.resp_venda}|${lancamento.numero_contrato}`;
 
-Alternativa
-- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
-- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
+// Depois:
+const hashStr = `${lancamento.empresa}|${lancamento.matricula}|${lancamento.produto}|${lancamento.data_lancamento}|${lancamento.valor}|${lancamento.resp_venda}|${lancamento.numero_contrato}|${lancamento.forma_pagamento}`;
+```
 
-Resultado esperado depois do ajuste
-- Abrir o Dashboard não manda mais email.
-- Apenas o upload concluído dispara o envio automático.
-- O botão “Reenviar por email” continua funcionando manualmente.
+### 2. Reprocessar o upload do dia 05/03
+
+Após o deploy da função corrigida, o usuário precisará re-importar o arquivo do dia 05/03 para que a parcela de 149,00 com "CARTÃO RECORRENTE" seja processada (as linhas já existentes serão ignoradas como duplicatas, e as novas serão importadas).
+
+### Arquivos alterados
+- `supabase/functions/upload-importar-xls/index.ts` -- adicionar forma_pagamento ao hash
+
