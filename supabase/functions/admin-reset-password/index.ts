@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
 
     // Enforce empresa isolation: admin can only reset passwords within their own empresa
     if (!isSuperAdmin) {
-      const { data: callerEmpresaId } = await supabase.rpc('get_user_empresa_id', { _user_id: caller.id });
+      const { data: callerEmpresaId } = await supabase.rpc('get_user_empresa_id', { _user_id: callerId });
       const { data: targetRole } = await supabase
         .from('user_roles')
         .select('empresa_id')
