@@ -93,12 +93,18 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
 
   const upsertF360 = useMutation({
     mutationFn: async (params: { data: string; field: 'valor_f360' | 'valor_pix_f360'; value: number }) => {
+      // Get existing row to preserve the other field value
+      const existing = f360Map[params.data];
+      const payload = {
+        empresa_id: empresaId,
+        data: params.data,
+        valor_f360: existing?.valor_f360 || 0,
+        valor_pix_f360: existing?.valor_pix_f360 || 0,
+        [params.field]: params.value,
+      };
       const { error } = await supabase
         .from('fechamento_caixa_f360' as any)
-        .upsert(
-          { empresa_id: empresaId, data: params.data, [params.field]: params.value } as any,
-          { onConflict: 'empresa_id,data' }
-        );
+        .upsert(payload as any, { onConflict: 'empresa_id,data' });
       if (error) throw error;
     },
     onSuccess: () => {
