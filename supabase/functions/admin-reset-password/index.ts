@@ -48,10 +48,14 @@ Deno.serve(async (req) => {
     }
 
     // Find user by email
-    const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+    const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({
+      filter: `email.eq.${email}`,
+      page: 1,
+      perPage: 1,
+    });
     if (listError) throw listError;
 
-    const targetUser = users.find(u => u.email === email);
+    const targetUser = users?.[0];
     if (!targetUser) {
       return new Response(JSON.stringify({ error: 'Usuário com este email não encontrado' }), {
         status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
