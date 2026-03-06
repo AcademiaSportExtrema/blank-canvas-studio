@@ -1,58 +1,31 @@
 
-Diagnóstico
 
-O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
+## Diagnóstico
 
-Onde isso acontece
-1. `src/pages/Upload.tsx`
-- Após concluir o upload, a tela chama `ai-analista` automaticamente.
+Os logs de autenticação confirmam `Invalid login credentials` para `analistaadmsport@gmail.com` com a senha `Enzo@2026`. A senha atual no Supabase Auth não corresponde.
 
-2. `src/components/AnalistaIaCard.tsx`
-- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
-- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
+Há dois problemas:
+1. **Senha incorreta no banco** -- precisa ser redefinida via Admin API
+2. **Edge function `admin-reset-password` com bug** -- o parâmetro `filter` do `listUsers` não funciona como esperado na API Admin do Supabase. Precisa buscar por email de forma diferente.
 
-O ponto que criou a duplicidade
-- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
-- Então qualquer lugar que execute `ai-analista` agora também envia email.
+## Plano
 
-Por que isso vira 2 emails
-- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
-- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
-- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
-- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
+### 1. Corrigir a busca de usuário na Edge Function
 
-O que encontrei que confirma isso
-- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
-- Não há email duplicado no cadastro de destinatários.
-- O padrão da imagem (08:01 e 08:18) bate exatamente com:
-  - um disparo ao abrir Dashboard
-  - outro disparo após o upload
+Substituir o `listUsers({ filter: ... })` por uma iteração paginada que compara o email manualmente, ou usar `supabase.auth.admin.getUserByEmail()` (disponível em versões recentes do SDK):
 
-Conclusão
-- O problema não está no cadastro de emails dos gestores.
-- O problema está no acoplamento entre “gerar análise” e “enviar email”.
-- Hoje o sistema envia email tanto:
-  - quando a análise é gerada pelo Dashboard
-  - quanto quando a análise é gerada após o upload
+```typescript
+// Em vez de listUsers com filter quebrado:
+const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+const targetUser = data?.users?.find(u => u.email === email);
+```
 
-Correção recomendada
-- Deixar o envio automático acontecer apenas no fluxo de upload.
-- E impedir que a geração automática do card no Dashboard dispare email.
+### 2. Redefinir a senha do seu usuário
 
-Forma mais segura de corrigir
-- Passar um parâmetro explícito no `ai-analista`, por exemplo:
-  - `trigger_email: true` no upload
-  - `trigger_email: false` no Dashboard
-- Assim:
-  - abrir Dashboard gera/atualiza análise sem email
-  - upload concluído gera análise com email automático
-  - botão manual continua sendo reenvio manual
+Após o deploy da função corrigida, usar o `curl_edge_functions` para chamar a função diretamente com service role e redefinir a senha para `Enzo@2026`.
 
-Alternativa
-- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
-- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
+Alternativamente, posso fazer o reset diretamente via a Supabase Auth Admin API usando curl.
 
-Resultado esperado depois do ajuste
-- Abrir o Dashboard não manda mais email.
-- Apenas o upload concluído dispara o envio automático.
-- O botão “Reenviar por email” continua funcionando manualmente.
+### Arquivos alterados
+- `supabase/functions/admin-reset-password/index.ts` -- corrigir busca por email
+
