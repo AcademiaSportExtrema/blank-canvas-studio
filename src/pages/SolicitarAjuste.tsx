@@ -70,7 +70,7 @@ export default function SolicitarAjuste() {
   const { data: searchResults, isLoading: searching } = useQuery({
     queryKey: ['search-lancamentos-ajuste', searchQuery],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('search_lancamentos_for_ajuste', {
+      const { data, error } = await (supabase.rpc as any)('search_lancamentos_for_ajuste', {
         _search: searchQuery,
         _limit: 20,
       });

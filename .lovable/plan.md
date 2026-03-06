@@ -1,40 +1,58 @@
-## Problem Diagnosis
 
-There are **two issues** preventing the app from working after login:
+Diagnóstico
 
-### Issue 1: No role assigned to the user
+O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
 
-The user `analistaadmsport@gmail.com` (id: `4242b925-f435-4ffb-9860-560ab4acbf7e`) successfully authenticates, but has **no row in `user_roles**`. The `useAuth` hook fetches the role, gets nothing back, logs "Failed to fetch user role: null", and sets `role = null`. The `Login` page's redirect `useEffect` only fires when `user && role` are both truthy -- so the user stays stuck on `/login`.
+Onde isso acontece
+1. `src/pages/Upload.tsx`
+- Após concluir o upload, a tela chama `ai-analista` automaticamente.
 
-### Issue 2: Empty Supabase types file
+2. `src/components/AnalistaIaCard.tsx`
+- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
+- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
 
-The `src/integrations/supabase/types.ts` was regenerated with empty tables (`[_ in never]: never`), which causes 50+ TypeScript build errors across the codebase. Every `supabase.from('table_name')` call fails because TypeScript doesn't know any tables exist.
+O ponto que criou a duplicidade
+- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
+- Então qualquer lugar que execute `ai-analista` agora também envia email.
 
-## Plan
+Por que isso vira 2 emails
+- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
+- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
+- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
+- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
 
-### Step 1: Insert a user_role (super admin) for the existing user
+O que encontrei que confirma isso
+- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
+- Não há email duplicado no cadastro de destinatários.
+- O padrão da imagem (08:01 e 08:18) bate exatamente com:
+  - um disparo ao abrir Dashboard
+  - outro disparo após o upload
 
-Run a SQL migration to insert an admin role for the user, linked to the existing empresa:
+Conclusão
+- O problema não está no cadastro de emails dos gestores.
+- O problema está no acoplamento entre “gerar análise” e “enviar email”.
+- Hoje o sistema envia email tanto:
+  - quando a análise é gerada pelo Dashboard
+  - quanto quando a análise é gerada após o upload
 
-```sql
-INSERT INTO public.user_roles (user_id, role, empresa_id)
-VALUES (
-  '4242b925-f435-4ffb-9860-560ab4acbf7e',
-  'admin',
-  '00000000-0000-0000-0000-000000000001'
-);
-```
+Correção recomendada
+- Deixar o envio automático acontecer apenas no fluxo de upload.
+- E impedir que a geração automática do card no Dashboard dispare email.
 
-### Step 2: Regenerate `types.ts` from the actual database schema
+Forma mais segura de corrigir
+- Passar um parâmetro explícito no `ai-analista`, por exemplo:
+  - `trigger_email: true` no upload
+  - `trigger_email: false` no Dashboard
+- Assim:
+  - abrir Dashboard gera/atualiza análise sem email
+  - upload concluído gera análise com email automático
+  - botão manual continua sendo reenvio manual
 
-The types file needs to reflect all 26 tables that exist in the database. This will be done by triggering a types regeneration so the Supabase client knows about `user_roles`, `empresas`, `lancamentos`, etc. This single change will fix all 50+ build errors at once.
+Alternativa
+- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
+- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
 
-### Step 3: Verify the login flow
-
-After both fixes, login should: authenticate -> fetch role (admin) -> redirect to `/dashboard`.
-
-## Technical Details
-
-- The types file cannot be edited manually per project rules; it must be regenerated from the Supabase schema
-- The empresa `00000000-0000-0000-0000-000000000001` ("Empresa Principal") is active with `subscription_status = 'active'`
-- The `user_roles` table requires `empresa_id` (NOT NULL), so we must include it in the insert
+Resultado esperado depois do ajuste
+- Abrir o Dashboard não manda mais email.
+- Apenas o upload concluído dispara o envio automático.
+- O botão “Reenviar por email” continua funcionando manualmente.
