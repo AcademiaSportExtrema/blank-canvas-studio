@@ -43,8 +43,8 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: caller.id, _role: 'admin' });
-    const { data: isSuperAdmin } = await supabase.rpc('has_role', { _user_id: caller.id, _role: 'super_admin' });
+    const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: callerId, _role: 'admin' });
+    const { data: isSuperAdmin } = await supabase.rpc('has_role', { _user_id: callerId, _role: 'super_admin' });
     if (!isAdmin && !isSuperAdmin) {
       return new Response(JSON.stringify({ error: 'Apenas administradores podem redefinir senhas' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
