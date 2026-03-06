@@ -149,7 +149,7 @@ export async function processarLinhas(
       };
 
       // Gerar hash para deduplicação
-      const hashStr = `${lancamento.empresa}|${lancamento.matricula}|${lancamento.produto}|${lancamento.data_lancamento}|${lancamento.valor}|${lancamento.resp_venda}|${lancamento.numero_contrato}`;
+      const hashStr = `${lancamento.empresa}|${lancamento.matricula}|${lancamento.produto}|${lancamento.data_lancamento}|${lancamento.valor}|${lancamento.resp_venda}|${lancamento.numero_contrato}|${lancamento.forma_pagamento}`;
       const encoder = new TextEncoder();
       const data = encoder.encode(hashStr);
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
