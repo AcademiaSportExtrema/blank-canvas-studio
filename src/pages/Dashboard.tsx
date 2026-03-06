@@ -234,12 +234,12 @@ export default function Dashboard() {
     queryKey: ['dashboard-realizado-gerencial', mesSelecionado, empresaId],
     enabled: isAdmin && !!empresaId,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_realizado_por_mes', {
+      const { data, error } = await (supabase.rpc as any)('get_realizado_por_mes', {
         p_empresa_id: empresaId!,
         p_ano: anoSelecionado,
       });
       if (error) throw error;
-      const mesData = (data || []).find((d: any) => d.mes === mesSelecionadoNum);
+      const mesData = ((data || []) as any[]).find((d: any) => d.mes === mesSelecionadoNum);
       return mesData ? Number(mesData.total) : 0;
     },
   });
