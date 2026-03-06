@@ -95,8 +95,8 @@ Deno.serve(async (req) => {
 
     // Audit log
     await supabase.from('audit_logs').insert({
-      actor_id: caller.id,
-      actor_email: caller.email,
+      actor_id: callerId,
+      actor_email: callerEmail,
       actor_role: 'admin',
       action: 'user.reset_password',
       target_table: 'auth.users',
