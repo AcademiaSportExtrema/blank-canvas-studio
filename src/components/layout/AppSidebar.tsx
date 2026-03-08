@@ -80,7 +80,7 @@ const superAdminMenuGroups = [
       { title: 'Empresas', icon: Building, href: '/super-admin/empresas' },
       { title: 'Nova Empresa', icon: PlusCircle, href: '/super-admin/empresa/nova' },
       { title: 'Usuários', icon: Users, href: '/super-admin/usuarios' },
-      { title: 'Tickets', icon: TicketIcon, href: '/super-admin/tickets' },
+      
       { title: 'Financeiro', icon: DollarSign, href: '/super-admin/financeiro' },
       { title: 'Integrações', icon: Plug, href: '/super-admin/integracoes' },
     ],

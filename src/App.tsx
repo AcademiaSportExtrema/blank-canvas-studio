@@ -95,11 +95,6 @@ const App = () => (
                 <Usuarios />
               </ProtectedRoute>
             } />
-            <Route path="/super-admin/tickets" element={
-              <ProtectedRoute requiredRole="super_admin">
-                <Tickets />
-              </ProtectedRoute>
-            } />
 
             {/* Admin routes */}
             <Route path="/dashboard" element={
