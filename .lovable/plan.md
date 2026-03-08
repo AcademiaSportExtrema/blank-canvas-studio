@@ -1,58 +1,63 @@
 
-Diagnóstico
+## O que o usuário quer
 
-O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
+Simplificar a seção de preços para ter **1 único plano** com dois valores:
+- **R$ 297,00/mês** (mensal)
+- **R$ 252,45/mês** cobrado anualmente (15% de desconto = R$ 297 × 0,85 ≈ **R$ 252**/mês, ou seja, **R$ 3.029/ano**)
 
-Onde isso acontece
-1. `src/pages/Upload.tsx`
-- Após concluir o upload, a tela chama `ai-analista` automaticamente.
+### Impacto nos arquivos
 
-2. `src/components/AnalistaIaCard.tsx`
-- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
-- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
+**1. `src/pages/LandingPage.tsx`** — Seção de preços
+- Remover os 3 planos atuais (Starter R$197, Pro R$397, Enterprise sob consulta)
+- Criar 1 único plano centralizado com toggle mensal/anual
+- Layout: card único centralizado e destacado (com borda ciano + glow), similar ao card "Pro" atual
+- Features: listar todos os recursos inclusos (tudo do sistema)
+- Manter toggle Mensal/Anual com badge "-15%"
 
-O ponto que criou a duplicidade
-- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
-- Então qualquer lugar que execute `ai-analista` agora também envia email.
+**2. `src/components/super-admin/FinanceiroContent.tsx`** — Campo de plano exibido no sistema interno
+- Onde aparece "Starter" / "Pro" / "Enterprise", simplificar o badge/texto para mostrar apenas "Padrão" ou o valor cadastrado
+- O campo `valor_mensal` em cada empresa já é livre, então não muda lógica, apenas referências visuais a nomes de plano antigos
 
-Por que isso vira 2 emails
-- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
-- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
-- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
-- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
+**3. `src/pages/super-admin/NovaEmpresa.tsx`** *(opcional, baixa prioridade)*
+- Se houver um select de plano, atualizar — mas pela leitura do código não há campo de plano no formulário, apenas `valor_mensal` livre, então nada muda aqui
 
-O que encontrei que confirma isso
-- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
-- Não há email duplicado no cadastro de destinatários.
-- O padrão da imagem (08:01 e 08:18) bate exatamente com:
-  - um disparo ao abrir Dashboard
-  - outro disparo após o upload
+### Layout do novo card de preços
 
-Conclusão
-- O problema não está no cadastro de emails dos gestores.
-- O problema está no acoplamento entre “gerar análise” e “enviar email”.
-- Hoje o sistema envia email tanto:
-  - quando a análise é gerada pelo Dashboard
-  - quanto quando a análise é gerada após o upload
+```text
+        ┌──────────────────────────────────┐
+        │         [toggle Mensal/Anual]    │
+        │                                  │
+        │  ┌────────────────────────────┐  │
+        │  │  MetasHub Pro              │  │
+        │  │  Plataforma completa       │  │
+        │  │                            │  │
+        │  │  R$ 297 /mês               │  │
+        │  │  [Se anual: R$ 252/mês]    │  │
+        │  │  [Se anual: cobrado anual] │  │
+        │  │                            │  │
+        │  │  [Começar grátis - 14 dias]│  │
+        │  │                            │  │
+        │  │  ✓ Dashboard completo      │  │
+        │  │  ✓ Upload de planilhas     │  │
+        │  │  ✓ Metas e comissões       │  │
+        │  │  ✓ Ranking de consultoras  │  │
+        │  │  ✓ IA Coach personalizado  │  │
+        │  │  ✓ Análise automática IA   │  │
+        │  │  ✓ Gestão de devedores     │  │
+        │  │  ✓ Relatórios avançados    │  │
+        │  │  ✓ Suporte prioritário     │  │
+        │  └────────────────────────────┘  │
+        └──────────────────────────────────┘
+```
 
-Correção recomendada
-- Deixar o envio automático acontecer apenas no fluxo de upload.
-- E impedir que a geração automática do card no Dashboard dispare email.
+### Cálculo do desconto anual
+- Mensal: R$ 297,00/mês
+- Anual: R$ 297 × 0,85 = **R$ 252,45/mês** → arredondado para **R$ 252/mês**
+- Total anual: R$ 252 × 12 = **R$ 3.024/ano**
 
-Forma mais segura de corrigir
-- Passar um parâmetro explícito no `ai-analista`, por exemplo:
-  - `trigger_email: true` no upload
-  - `trigger_email: false` no Dashboard
-- Assim:
-  - abrir Dashboard gera/atualiza análise sem email
-  - upload concluído gera análise com email automático
-  - botão manual continua sendo reenvio manual
+### Arquivos a editar
 
-Alternativa
-- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
-- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
-
-Resultado esperado depois do ajuste
-- Abrir o Dashboard não manda mais email.
-- Apenas o upload concluído dispara o envio automático.
-- O botão “Reenviar por email” continua funcionando manualmente.
+| Arquivo | Mudança |
+|---------|---------|
+| `src/pages/LandingPage.tsx` | Substituir array `PLANS` por 1 plano único (R$ 297 / R$ 252) e ajustar o grid de 3 colunas para centralizado |
+| `src/components/super-admin/FinanceiroContent.tsx` | Remover referências visuais a "Starter"/"Pro"/"Enterprise" se houver filtro ou badge por nome de plano |
