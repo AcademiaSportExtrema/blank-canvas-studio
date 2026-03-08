@@ -873,6 +873,38 @@ export type Database = {
           },
         ]
       }
+      notificacoes_cobranca: {
+        Row: {
+          empresa_id: string
+          enviado_em: string
+          id: string
+          mes_referencia: string
+          tipo: Database["public"]["Enums"]["notificacao_cobranca_tipo"]
+        }
+        Insert: {
+          empresa_id: string
+          enviado_em?: string
+          id?: string
+          mes_referencia: string
+          tipo: Database["public"]["Enums"]["notificacao_cobranca_tipo"]
+        }
+        Update: {
+          empresa_id?: string
+          enviado_em?: string
+          id?: string
+          mes_referencia?: string
+          tipo?: Database["public"]["Enums"]["notificacao_cobranca_tipo"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_cobranca_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pagamentos_agregadores: {
         Row: {
           agregador: string
@@ -1356,6 +1388,7 @@ export type Database = {
       coach_diretriz_tipo: "permitido" | "proibido"
       cobranca_evento_tipo: "tentativa_contato" | "pagamento_confirmado"
       cobranca_status: "pendente" | "em_contato" | "pago"
+      notificacao_cobranca_tipo: "lembrete" | "cobranca" | "atraso"
       operador_regra:
         | "contem"
         | "igual"
@@ -1510,6 +1543,7 @@ export const Constants = {
       coach_diretriz_tipo: ["permitido", "proibido"],
       cobranca_evento_tipo: ["tentativa_contato", "pagamento_confirmado"],
       cobranca_status: ["pendente", "em_contato", "pago"],
+      notificacao_cobranca_tipo: ["lembrete", "cobranca", "atraso"],
       operador_regra: ["contem", "igual", "comeca_com", "termina_com", "regex"],
       regra_mes: ["DATA_LANCAMENTO", "DATA_INICIO"],
       responsavel_campo: ["resp_venda", "resp_recebimento"],
