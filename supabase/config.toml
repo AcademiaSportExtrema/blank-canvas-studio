@@ -1,1 +1,4 @@
 project_id = "jijuegdzijgrrquvigdt"
+
+[functions.check-vencimentos]
+verify_jwt = false

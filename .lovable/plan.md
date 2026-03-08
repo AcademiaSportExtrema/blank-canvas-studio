@@ -1,44 +1,58 @@
 
+Diagnóstico
 
-## Plano: Automatizar fluxo de cobrança recorrente
+O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
 
-### Situação atual
-O fluxo é 100% manual: super admin registra pagamentos e altera status. Funciona, mas depende de lembrar de cobrar e verificar diariamente.
+Onde isso acontece
+1. `src/pages/Upload.tsx`
+- Após concluir o upload, a tela chama `ai-analista` automaticamente.
 
-### O que implementar para tornar o fluxo robusto
+2. `src/components/AnalistaIaCard.tsx`
+- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
+- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
 
-#### 1. Cron job diário para atualizar status automaticamente
-Edge function `check-vencimentos` executada diariamente via pg_cron:
-- Busca empresas com `subscription_status = 'active'` e `proximo_vencimento < hoje`
-- Atualiza para `past_due` automaticamente
-- Busca empresas com `trial_ends_at < hoje` e `subscription_status = 'trialing'`
-- Atualiza para `past_due` (trial expirado sem pagamento)
-- Opcionalmente: empresas `past_due` há mais de 30 dias viram `canceled`
+O ponto que criou a duplicidade
+- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
+- Então qualquer lugar que execute `ai-analista` agora também envia email.
 
-#### 2. Notificações por email (usando Resend, já configurado)
-Edge function `notificar-vencimento` chamada pelo mesmo cron:
-- 5 dias antes do vencimento: email de lembrete ao `financeiro_email`
-- No dia do vencimento: email de cobrança
-- 3 dias após vencimento: email de atraso
-- Registra em tabela `notificacoes_cobranca` para evitar duplicatas
+Por que isso vira 2 emails
+- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
+- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
+- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
+- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
 
-#### 3. Nova tabela `notificacoes_cobranca`
-```
-id, empresa_id, tipo (lembrete/cobranca/atraso), enviado_em, mes_referencia
-```
-Evita enviar o mesmo email duas vezes no mesmo ciclo.
+O que encontrei que confirma isso
+- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
+- Não há email duplicado no cadastro de destinatários.
+- O padrão da imagem (08:01 e 08:18) bate exatamente com:
+  - um disparo ao abrir Dashboard
+  - outro disparo após o upload
 
-#### 4. Dashboard: indicadores visuais de próximos vencimentos
-Na página Financeiro, destacar visualmente:
-- Amarelo: vence nos próximos 5 dias
-- Vermelho: já venceu
-- Verde: pago no mês atual
+Conclusão
+- O problema não está no cadastro de emails dos gestores.
+- O problema está no acoplamento entre “gerar análise” e “enviar email”.
+- Hoje o sistema envia email tanto:
+  - quando a análise é gerada pelo Dashboard
+  - quanto quando a análise é gerada após o upload
 
-### Arquivos alterados
-- Nova edge function `check-vencimentos/index.ts`
-- Nova migration SQL (tabela `notificacoes_cobranca` + pg_cron schedule)
-- `src/pages/super-admin/Financeiro.tsx` — indicadores visuais de vencimento
+Correção recomendada
+- Deixar o envio automático acontecer apenas no fluxo de upload.
+- E impedir que a geração automática do card no Dashboard dispare email.
 
-### Sobre integração com Stripe
-Se quiser automatizar a cobrança (gerar boleto/PIX/cartão automaticamente), posso integrar o Stripe. Isso eliminaria a necessidade de registrar pagamentos manualmente — o Stripe avisaria via webhook quando o pagamento foi confirmado. Mas isso é um passo adicional que pode ser feito depois.
+Forma mais segura de corrigir
+- Passar um parâmetro explícito no `ai-analista`, por exemplo:
+  - `trigger_email: true` no upload
+  - `trigger_email: false` no Dashboard
+- Assim:
+  - abrir Dashboard gera/atualiza análise sem email
+  - upload concluído gera análise com email automático
+  - botão manual continua sendo reenvio manual
 
+Alternativa
+- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
+- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
+
+Resultado esperado depois do ajuste
+- Abrir o Dashboard não manda mais email.
+- Apenas o upload concluído dispara o envio automático.
+- O botão “Reenviar por email” continua funcionando manualmente.
