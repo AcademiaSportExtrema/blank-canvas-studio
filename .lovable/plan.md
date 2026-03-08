@@ -1,58 +1,66 @@
 
-Diagnóstico
 
-O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
+## Análise: O sistema está preparado para SaaS multi-empresa?
 
-Onde isso acontece
-1. `src/pages/Upload.tsx`
-- Após concluir o upload, a tela chama `ai-analista` automaticamente.
+### O que JÁ existe
 
-2. `src/components/AnalistaIaCard.tsx`
-- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
-- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
+A estrutura multi-tenant está bem montada:
 
-O ponto que criou a duplicidade
-- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
-- Então qualquer lugar que execute `ai-analista` agora também envia email.
+- **Tabela `empresas`** com `subscription_status` (active, past_due, canceled, trialing), `trial_ends_at`, `ativo`
+- **Função `is_empresa_active()`** que verifica status ativo + assinatura válida ou trial vigente
+- **`ProtectedRoute`** bloqueia acesso e redireciona para `/empresa-bloqueada` quando empresa está inativa
+- **Página `EmpresaBloqueada`** com mensagem de acesso suspenso
+- **Painel super_admin** com páginas de Empresas (criar, ativar/desativar) e Financeiro (visualização de status)
+- **RLS completo** com isolamento por `empresa_id` em todas as tabelas
+- **Edge Function `create-empresa`** para provisionar empresa + admin + permissões
 
-Por que isso vira 2 emails
-- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
-- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
-- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
-- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
+### O que FALTA para funcionar como SaaS com cobrança
 
-O que encontrei que confirma isso
-- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
-- Não há email duplicado no cadastro de destinatários.
-- O padrão da imagem (08:01 e 08:18) bate exatamente com:
-  - um disparo ao abrir Dashboard
-  - outro disparo após o upload
+1. **Integração de pagamento (Stripe)** -- Não existe. O `subscription_status` é gerenciado manualmente. Não há cobrança automática, checkout, webhooks, nem gestão de planos/preços.
 
-Conclusão
-- O problema não está no cadastro de emails dos gestores.
-- O problema está no acoplamento entre “gerar análise” e “enviar email”.
-- Hoje o sistema envia email tanto:
-  - quando a análise é gerada pelo Dashboard
-  - quanto quando a análise é gerada após o upload
+2. **Tabela de planos/preços** -- Não existe definição de planos (ex: Básico, Pro, Enterprise) com limites (número de consultoras, uploads, etc.).
 
-Correção recomendada
-- Deixar o envio automático acontecer apenas no fluxo de upload.
-- E impedir que a geração automática do card no Dashboard dispare email.
+3. **Webhook para atualizar status** -- Sem webhook do Stripe, o `subscription_status` não muda automaticamente quando um pagamento falha ou é cancelado.
 
-Forma mais segura de corrigir
-- Passar um parâmetro explícito no `ai-analista`, por exemplo:
-  - `trigger_email: true` no upload
-  - `trigger_email: false` no Dashboard
-- Assim:
-  - abrir Dashboard gera/atualiza análise sem email
-  - upload concluído gera análise com email automático
-  - botão manual continua sendo reenvio manual
+4. **Portal do cliente para billing** -- A empresa-cliente não consegue ver/gerenciar sua assinatura, trocar plano, atualizar cartão, ver faturas.
 
-Alternativa
-- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
-- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
+5. **Controle de limites por plano** -- Sem limites de uso (ex: máximo de consultoras, uploads por mês).
 
-Resultado esperado depois do ajuste
-- Abrir o Dashboard não manda mais email.
-- Apenas o upload concluído dispara o envio automático.
-- O botão “Reenviar por email” continua funcionando manualmente.
+6. **Trial automático** -- `trial_ends_at` existe no banco mas não há fluxo de onboarding com trial automático.
+
+7. **Página Financeiro do super_admin** -- É apenas visualização estática, sem valores de receita, histórico de pagamentos, ou ações de cobrança.
+
+---
+
+### Plano de implementação
+
+#### Fase 1: Integração Stripe (core)
+- Habilitar Stripe via ferramenta Lovable
+- Criar produtos/preços no Stripe (planos mensais)
+- Criar Edge Function de checkout que gera uma Stripe Checkout Session vinculada à `empresa_id`
+- Criar Edge Function de webhook que recebe eventos do Stripe (`invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated/deleted`) e atualiza `subscription_status` na tabela `empresas`
+- Adicionar `stripe_customer_id` e `stripe_subscription_id` à tabela `empresas`
+
+#### Fase 2: Portal de billing para empresas
+- Criar página `/assinatura` acessível pelo admin da empresa
+- Mostrar plano atual, próxima cobrança, status
+- Botão para acessar o Stripe Customer Portal (gerenciar cartão, cancelar, trocar plano)
+
+#### Fase 3: Melhorar painel Financeiro do super_admin
+- Mostrar MRR (receita recorrente mensal), churn, histórico
+- Ações manuais: alterar status, conceder trial, forçar cancelamento
+- Listar pagamentos recentes via Stripe API
+
+#### Fase 4: Controle de limites por plano
+- Criar tabela `planos` com limites (max_consultoras, max_uploads_mes, etc.)
+- Vincular `empresas` a um plano
+- Validar limites no frontend e nas Edge Functions
+
+### Arquivos a criar/alterar
+- Nova migration: adicionar `stripe_customer_id`, `stripe_subscription_id` à tabela `empresas`
+- Nova Edge Function: `stripe-checkout` (criar sessão de checkout)
+- Nova Edge Function: `stripe-webhook` (processar eventos)
+- Nova página: `src/pages/Assinatura.tsx`
+- Alterar: `src/pages/super-admin/Financeiro.tsx` (dados reais)
+- Nova migration: tabela `planos` (fase 4)
+
