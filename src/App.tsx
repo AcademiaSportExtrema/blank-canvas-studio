@@ -62,9 +62,9 @@ const App = () => (
             } />
 
             {/* Super Admin routes */}
-            <Route path="/super-admin/empresas" element={
+            <Route path="/super-admin" element={
               <ProtectedRoute requiredRole="super_admin">
-                <Empresas />
+                <SaasAdmin />
               </ProtectedRoute>
             } />
             <Route path="/super-admin/empresa/nova" element={
@@ -72,26 +72,16 @@ const App = () => (
                 <NovaEmpresa />
               </ProtectedRoute>
             } />
-            <Route path="/super-admin/financeiro" element={
-              <ProtectedRoute requiredRole="super_admin">
-                <Financeiro />
-              </ProtectedRoute>
-            } />
-            <Route path="/super-admin/integracoes" element={
-              <ProtectedRoute requiredRole="super_admin">
-                <Integracoes />
-              </ProtectedRoute>
-            } />
             <Route path="/super-admin/empresas/:id" element={
               <ProtectedRoute requiredRole="super_admin">
                 <EmpresaDetalhes />
               </ProtectedRoute>
             } />
-            <Route path="/super-admin/usuarios" element={
-              <ProtectedRoute requiredRole="super_admin">
-                <Usuarios />
-              </ProtectedRoute>
-            } />
+            {/* Redirects for old routes */}
+            <Route path="/super-admin/empresas" element={<Navigate to="/super-admin" replace />} />
+            <Route path="/super-admin/usuarios" element={<Navigate to="/super-admin" replace />} />
+            <Route path="/super-admin/financeiro" element={<Navigate to="/super-admin" replace />} />
+            <Route path="/super-admin/integracoes" element={<Navigate to="/super-admin" replace />} />
 
             {/* Admin routes */}
             <Route path="/dashboard" element={
