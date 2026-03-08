@@ -39,10 +39,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { nome, slug, email_admin, senha_admin } = await req.json();
+    const body = await req.json();
+    const {
+      nome, slug, email_admin, senha_admin,
+      cnpj, razao_social, telefone, email,
+      endereco, cidade, estado, cep,
+      financeiro_nome, financeiro_email, financeiro_telefone, financeiro_cpf,
+    } = body;
 
     if (!nome || !slug || !email_admin || !senha_admin) {
-      return new Response(JSON.stringify({ error: 'Todos os campos são obrigatórios' }), {
+      return new Response(JSON.stringify({ error: 'Campos obrigatórios: nome, slug, email_admin, senha_admin' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
@@ -50,13 +56,30 @@ Deno.serve(async (req) => {
     // 1. Create empresa
     const { data: empresa, error: empresaError } = await supabaseAdmin
       .from('empresas')
-      .insert({ nome, slug, ativo: true, subscription_status: 'active' })
+      .insert({
+        nome, slug, ativo: true, subscription_status: 'active',
+        cnpj: cnpj || null,
+        razao_social: razao_social || null,
+        telefone: telefone || null,
+        email: email || null,
+        endereco: endereco || null,
+        cidade: cidade || null,
+        estado: estado || null,
+        cep: cep || null,
+        financeiro_nome: financeiro_nome || null,
+        financeiro_email: financeiro_email || null,
+        financeiro_telefone: financeiro_telefone || null,
+        financeiro_cpf: financeiro_cpf || null,
+      })
       .select()
       .single();
 
     if (empresaError) {
       if (empresaError.code === '23505') {
-        return new Response(JSON.stringify({ error: 'Já existe uma empresa com este slug' }), {
+        const msg = empresaError.message?.includes('cnpj')
+          ? 'Já existe uma empresa com este CNPJ'
+          : 'Já existe uma empresa com este slug';
+        return new Response(JSON.stringify({ error: msg }), {
           status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
@@ -107,7 +130,7 @@ Deno.serve(async (req) => {
       action: 'empresa.create',
       target_table: 'empresas',
       target_id: empresa.id,
-      metadata: { nome, slug, email_admin },
+      metadata: { nome, slug, cnpj, email_admin, financeiro_nome, financeiro_email },
     });
 
     return new Response(JSON.stringify({ success: true, empresa_id: empresa.id }), {
