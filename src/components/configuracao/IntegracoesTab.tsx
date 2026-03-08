@@ -24,6 +24,15 @@ export function IntegracoesTab() {
   const [resendConfigured, setResendConfigured] = useState(false);
   const [loadingResend, setLoadingResend] = useState(true);
 
+  // Stripe state
+  const [stripeSecretKey, setStripeSecretKey] = useState('');
+  const [stripePublishableKey, setStripePublishableKey] = useState('');
+  const [stripeWebhookSecret, setStripeWebhookSecret] = useState('');
+  const [showStripeSecret, setShowStripeSecret] = useState(false);
+  const [showStripeWebhook, setShowStripeWebhook] = useState(false);
+  const [isSavingStripe, setIsSavingStripe] = useState(false);
+  const [stripeConfigured, setStripeConfigured] = useState(false);
+
   useEffect(() => {
     loadResendSettings();
   }, []);
