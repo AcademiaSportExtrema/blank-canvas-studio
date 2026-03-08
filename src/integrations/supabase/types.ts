@@ -909,6 +909,50 @@ export type Database = {
         }
         Relationships: []
       }
+      pagamentos_saas: {
+        Row: {
+          created_at: string
+          data_pagamento: string
+          empresa_id: string
+          id: string
+          mes_referencia: string
+          metodo: string
+          observacao: string | null
+          registrado_por: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          data_pagamento: string
+          empresa_id: string
+          id?: string
+          mes_referencia: string
+          metodo?: string
+          observacao?: string | null
+          registrado_por: string
+          valor?: number
+        }
+        Update: {
+          created_at?: string
+          data_pagamento?: string
+          empresa_id?: string
+          id?: string
+          mes_referencia?: string
+          metodo?: string
+          observacao?: string | null
+          registrado_por?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pagamentos_saas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissoes_perfil: {
         Row: {
           created_at: string
