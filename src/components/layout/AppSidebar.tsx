@@ -75,7 +75,7 @@ const consultoraMenuItems = [
 
 const superAdminMenuGroups = [
   {
-    label: 'Plataforma',
+    label: 'SaaS',
     items: [
       { title: 'Empresas', icon: Building, href: '/super-admin/empresas' },
       { title: 'Nova Empresa', icon: PlusCircle, href: '/super-admin/empresa/nova' },
