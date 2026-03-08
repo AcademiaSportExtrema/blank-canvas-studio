@@ -358,7 +358,7 @@ const LandingPage = () => {
             </span>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="max-w-md mx-auto">
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
