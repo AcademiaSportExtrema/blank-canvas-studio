@@ -31,12 +31,9 @@ import EmpresaBloqueada from "./pages/EmpresaBloqueada";
 import NotFound from "./pages/NotFound";
 
 // Super Admin
-import Empresas from "./pages/super-admin/Empresas";
+import SaasAdmin from "./pages/super-admin/SaasAdmin";
 import NovaEmpresa from "./pages/super-admin/NovaEmpresa";
 import EmpresaDetalhes from "./pages/super-admin/EmpresaDetalhes";
-import Financeiro from "./pages/super-admin/Financeiro";
-import Integracoes from "./pages/super-admin/Integracoes";
-import Usuarios from "./pages/super-admin/Usuarios";
 
 
 const queryClient = new QueryClient();
