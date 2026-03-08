@@ -1,45 +1,58 @@
 
+Diagnóstico
 
-## Analise: Abas vs Menus separados no SaaS
+O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
 
-### Situacao atual
-O menu "SaaS" tem 5 itens no sidebar, cada um com sua propria pagina:
-- **Empresas** (150 linhas) — lista de empresas com status e acoes
-- **Nova Empresa** — formulario de cadastro
-- **Usuarios** (434 linhas) — gestao de usuarios com impersonation, dialogs
-- **Financeiro** (~400+ linhas) — KPIs, tabela de cobranca, registro de pagamento, historico
-- **Integracoes** (10 linhas) — wrapper simples
+Onde isso acontece
+1. `src/pages/Upload.tsx`
+- Após concluir o upload, a tela chama `ai-analista` automaticamente.
 
-### Recomendacao: Usar abas
+2. `src/components/AnalistaIaCard.tsx`
+- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
+- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
 
-Faz sentido consolidar em uma unica pagina com abas porque:
-1. **Contexto unificado** — o super admin gerencia tudo sobre o SaaS, nao precisa navegar entre paginas
-2. **Menos itens no sidebar** — o grupo SaaS fica com 1 item so, mais limpo
-3. **Padrao ja usado no projeto** — a pagina `Configuracao.tsx` ja usa exatamente esse padrao com Tabs
-4. **"Nova Empresa" nao precisa de menu proprio** — pode ser um botao dentro da aba Empresas (ja tem o link la)
+O ponto que criou a duplicidade
+- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
+- Então qualquer lugar que execute `ai-analista` agora também envia email.
 
-### Estrutura proposta
+Por que isso vira 2 emails
+- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
+- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
+- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
+- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
 
-Uma unica rota `/super-admin` com abas:
-- **Empresas** (inclui botao "Nova Empresa" e link para detalhes)
-- **Usuarios**
-- **Financeiro**
-- **Integracoes**
+O que encontrei que confirma isso
+- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
+- Não há email duplicado no cadastro de destinatários.
+- O padrão da imagem (08:01 e 08:18) bate exatamente com:
+  - um disparo ao abrir Dashboard
+  - outro disparo após o upload
 
-O sidebar ficaria com apenas 1 item: "SaaS" apontando para `/super-admin`.
+Conclusão
+- O problema não está no cadastro de emails dos gestores.
+- O problema está no acoplamento entre “gerar análise” e “enviar email”.
+- Hoje o sistema envia email tanto:
+  - quando a análise é gerada pelo Dashboard
+  - quanto quando a análise é gerada após o upload
 
-### Alteracoes tecnicas
+Correção recomendada
+- Deixar o envio automático acontecer apenas no fluxo de upload.
+- E impedir que a geração automática do card no Dashboard dispare email.
 
-1. **Criar `src/pages/super-admin/SaasAdmin.tsx`** — pagina com `<Tabs>` contendo 4 abas
-2. **Extrair conteudo** de cada pagina para componentes reutilizaveis:
-   - `src/components/super-admin/EmpresasContent.tsx` (extrair de Empresas.tsx)
-   - `src/components/super-admin/UsuariosContent.tsx` (extrair de Usuarios.tsx)
-   - `src/components/super-admin/FinanceiroContent.tsx` (extrair de Financeiro.tsx)
-   - Integracoes ja usa `IntegracoesTab` como componente
-3. **Atualizar `AppSidebar.tsx`** — grupo SaaS com 1 item so (`/super-admin`)
-4. **Atualizar `App.tsx`** — remover rotas individuais, manter apenas `/super-admin` e `/super-admin/empresa/:id` (detalhes precisa de rota propria)
-5. **Remover paginas individuais** que nao serao mais usadas (ou manter redirect)
+Forma mais segura de corrigir
+- Passar um parâmetro explícito no `ai-analista`, por exemplo:
+  - `trigger_email: true` no upload
+  - `trigger_email: false` no Dashboard
+- Assim:
+  - abrir Dashboard gera/atualiza análise sem email
+  - upload concluído gera análise com email automático
+  - botão manual continua sendo reenvio manual
 
-### Observacao
-A pagina `EmpresaDetalhes.tsx` continuaria com rota propria (`/super-admin/empresa/:id`) pois e uma pagina de detalhe especifica.
+Alternativa
+- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
+- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
 
+Resultado esperado depois do ajuste
+- Abrir o Dashboard não manda mais email.
+- Apenas o upload concluído dispara o envio automático.
+- O botão “Reenviar por email” continua funcionando manualmente.

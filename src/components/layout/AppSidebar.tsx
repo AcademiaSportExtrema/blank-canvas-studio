@@ -13,11 +13,7 @@ import {
   ArrowRightLeft,
   FileText,
   Building,
-  PlusCircle,
-  DollarSign,
-  Plug,
   Eye,
-  
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -77,12 +73,7 @@ const superAdminMenuGroups = [
   {
     label: 'SaaS',
     items: [
-      { title: 'Empresas', icon: Building, href: '/super-admin/empresas' },
-      { title: 'Nova Empresa', icon: PlusCircle, href: '/super-admin/empresa/nova' },
-      { title: 'Usuários', icon: Users, href: '/super-admin/usuarios' },
-      
-      { title: 'Financeiro', icon: DollarSign, href: '/super-admin/financeiro' },
-      { title: 'Integrações', icon: Plug, href: '/super-admin/integracoes' },
+      { title: 'Administração', icon: Building, href: '/super-admin' },
     ],
   },
 ];
