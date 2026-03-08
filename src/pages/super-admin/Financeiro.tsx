@@ -314,7 +314,15 @@ export default function Financeiro() {
                         const cfg = statusConfig[empresa.subscription_status] ?? statusConfig.active;
                         const diasAtraso = calcDiasAtraso(empresa.proximo_vencimento, empresa.subscription_status);
                         return (
-                          <TableRow key={empresa.id} className={diasAtraso > 0 ? 'bg-destructive/5' : ''}>
+                          <TableRow key={empresa.id} className={
+                            diasAtraso > 0
+                              ? 'bg-destructive/5'
+                              : empresa.proximo_vencimento && differenceInDays(new Date(empresa.proximo_vencimento), new Date()) <= 5 && differenceInDays(new Date(empresa.proximo_vencimento), new Date()) >= 0 && empresa.subscription_status !== 'canceled'
+                                ? 'bg-yellow-50 dark:bg-yellow-950/20'
+                                : empresa.ultimo_pagamento_em && new Date(empresa.ultimo_pagamento_em).getMonth() === new Date().getMonth() && new Date(empresa.ultimo_pagamento_em).getFullYear() === new Date().getFullYear()
+                                  ? 'bg-green-50 dark:bg-green-950/20'
+                                  : ''
+                          }>
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
                                 <Building className="h-4 w-4 text-muted-foreground" />
