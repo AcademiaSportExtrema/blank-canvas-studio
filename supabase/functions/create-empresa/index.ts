@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
       cnpj, razao_social, telefone, email,
       endereco, cidade, estado, cep,
       financeiro_nome, financeiro_email, financeiro_telefone, financeiro_cpf,
+      valor_mensal, dia_vencimento,
     } = body;
 
     if (!nome || !slug || !email_admin || !senha_admin) {
