@@ -435,6 +435,7 @@ export type Database = {
           cidade: string | null
           cnpj: string | null
           created_at: string
+          dia_vencimento: number
           email: string | null
           endereco: string | null
           estado: string | null
@@ -446,12 +447,17 @@ export type Database = {
           logo_url: string | null
           nome: string
           plano: string | null
+          proximo_vencimento: string | null
           razao_social: string | null
           slug: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           subscription_status: string
           telefone: string | null
           trial_ends_at: string | null
+          ultimo_pagamento_em: string | null
           updated_at: string
+          valor_mensal: number
         }
         Insert: {
           ativo?: boolean
@@ -459,6 +465,7 @@ export type Database = {
           cidade?: string | null
           cnpj?: string | null
           created_at?: string
+          dia_vencimento?: number
           email?: string | null
           endereco?: string | null
           estado?: string | null
@@ -470,12 +477,17 @@ export type Database = {
           logo_url?: string | null
           nome: string
           plano?: string | null
+          proximo_vencimento?: string | null
           razao_social?: string | null
           slug: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_status?: string
           telefone?: string | null
           trial_ends_at?: string | null
+          ultimo_pagamento_em?: string | null
           updated_at?: string
+          valor_mensal?: number
         }
         Update: {
           ativo?: boolean
@@ -483,6 +495,7 @@ export type Database = {
           cidade?: string | null
           cnpj?: string | null
           created_at?: string
+          dia_vencimento?: number
           email?: string | null
           endereco?: string | null
           estado?: string | null
@@ -494,12 +507,17 @@ export type Database = {
           logo_url?: string | null
           nome?: string
           plano?: string | null
+          proximo_vencimento?: string | null
           razao_social?: string | null
           slug?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_status?: string
           telefone?: string | null
           trial_ends_at?: string | null
+          ultimo_pagamento_em?: string | null
           updated_at?: string
+          valor_mensal?: number
         }
         Relationships: []
       }
