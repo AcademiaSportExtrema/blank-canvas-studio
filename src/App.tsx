@@ -28,6 +28,7 @@ import VisaoConsultora from "./pages/VisaoConsultora";
 import Relatorios from "./pages/Relatorios";
 import Devedores from "./pages/Devedores";
 import EmpresaBloqueada from "./pages/EmpresaBloqueada";
+import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
 
 // Super Admin
