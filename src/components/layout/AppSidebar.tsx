@@ -13,11 +13,7 @@ import {
   ArrowRightLeft,
   FileText,
   Building,
-  PlusCircle,
-  DollarSign,
-  Plug,
   Eye,
-  
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
