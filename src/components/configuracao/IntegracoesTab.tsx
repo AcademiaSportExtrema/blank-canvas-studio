@@ -313,6 +313,104 @@ export function IntegracoesTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Stripe Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <CreditCard className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Stripe — Pagamentos</CardTitle>
+                <CardDescription>
+                  Configure o Stripe para cobrança automática de assinaturas das empresas clientes.
+                </CardDescription>
+              </div>
+            </div>
+            <Badge
+              variant="outline"
+              className={stripeConfigured
+                ? 'text-green-700 border-green-300 bg-green-50'
+                : 'text-destructive border-destructive/30 bg-destructive/10'
+              }
+            >
+              {stripeConfigured ? 'Configurado' : 'Pendente'}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="stripe-secret-key">Secret Key</Label>
+            <div className="relative">
+              <Input
+                id="stripe-secret-key"
+                type={showStripeSecret ? 'text' : 'password'}
+                placeholder="sk_live_... ou sk_test_..."
+                value={stripeSecretKey}
+                onChange={(e) => setStripeSecretKey(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowStripeSecret(!showStripeSecret)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showStripeSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="stripe-publishable-key">Publishable Key</Label>
+            <Input
+              id="stripe-publishable-key"
+              type="text"
+              placeholder="pk_live_... ou pk_test_..."
+              value={stripePublishableKey}
+              onChange={(e) => setStripePublishableKey(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="stripe-webhook-secret">Webhook Secret</Label>
+            <div className="relative">
+              <Input
+                id="stripe-webhook-secret"
+                type={showStripeWebhook ? 'text' : 'password'}
+                placeholder="whsec_..."
+                value={stripeWebhookSecret}
+                onChange={(e) => setStripeWebhookSecret(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowStripeWebhook(!showStripeWebhook)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showStripeWebhook ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Obtenha suas chaves em{' '}
+              <a
+                href="https://dashboard.stripe.com/apikeys"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline inline-flex items-center gap-1"
+              >
+                dashboard.stripe.com <ExternalLink className="h-3 w-3" />
+              </a>
+            </p>
+            <Button onClick={handleSaveStripe} disabled={isSavingStripe}>
+              <Save className="h-4 w-4 mr-2" />
+              {isSavingStripe ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
