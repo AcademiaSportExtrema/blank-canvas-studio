@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Building, User, KeyRound } from 'lucide-react';
+import { ArrowLeft, Building, User, KeyRound, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -30,6 +30,8 @@ export default function NovaEmpresa() {
     financeiro_cpf: '',
     email_admin: '',
     senha_admin: '',
+    valor_mensal: '297',
+    dia_vencimento: '10',
   });
 
   const update = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,6 +175,29 @@ export default function NovaEmpresa() {
                 <div className="space-y-2">
                   <Label htmlFor="financeiro_cpf">CPF</Label>
                   <Input id="financeiro_cpf" placeholder="000.000.000-00" value={form.financeiro_cpf} onChange={update('financeiro_cpf')} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Plano / Cobrança */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Plano e Cobrança
+              </CardTitle>
+              <CardDescription>Defina o valor mensal e o dia de vencimento da assinatura.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="valor_mensal">Valor Mensal (R$) *</Label>
+                  <Input id="valor_mensal" type="number" min="0" step="0.01" placeholder="297.00" value={form.valor_mensal} onChange={update('valor_mensal')} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dia_vencimento">Dia de Vencimento *</Label>
+                  <Input id="dia_vencimento" type="number" min="1" max="28" placeholder="10" value={form.dia_vencimento} onChange={update('dia_vencimento')} />
                 </div>
               </div>
             </CardContent>
