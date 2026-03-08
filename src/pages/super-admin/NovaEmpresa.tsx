@@ -30,6 +30,8 @@ export default function NovaEmpresa() {
     financeiro_cpf: '',
     email_admin: '',
     senha_admin: '',
+    valor_mensal: '297',
+    dia_vencimento: '10',
   });
 
   const update = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
