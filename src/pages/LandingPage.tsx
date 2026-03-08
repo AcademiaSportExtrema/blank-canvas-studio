@@ -101,45 +101,21 @@ const FEATURES_GRID = [
 
 const PLANS = [
   {
-    name: "Starter",
-    price: { monthly: 197, annual: 167 },
-    description: "Para lojas com até 5 consultoras",
+    name: "MetasHub Pro",
+    price: { monthly: 297, annual: 252 },
+    description: "Plano completo para sua operação comercial",
     features: [
-      "Dashboard completo",
-      "Upload de planilhas",
-      "Metas e comissões",
-      "Ranking de consultoras",
-      "Suporte por email",
-    ],
-    highlighted: false,
-  },
-  {
-    name: "Pro",
-    price: { monthly: 397, annual: 337 },
-    description: "Para operações com até 20 consultoras",
-    features: [
-      "Tudo do Starter",
+      "Dashboard completo em tempo real",
+      "Upload e importação de planilhas",
+      "Metas, comissões e ranking",
       "IA Coach personalizado",
       "Análise automática por IA",
       "Gestão de devedores",
       "Relatórios avançados",
+      "Multi-empresa (SaaS)",
       "Suporte prioritário",
     ],
     highlighted: true,
-  },
-  {
-    name: "Enterprise",
-    price: { monthly: null, annual: null },
-    description: "Para redes e franquias",
-    features: [
-      "Tudo do Pro",
-      "Multi-empresa",
-      "API e integrações",
-      "SLA dedicado",
-      "Onboarding personalizado",
-      "Gerente de sucesso",
-    ],
-    highlighted: false,
   },
 ];
 
@@ -382,7 +358,7 @@ const LandingPage = () => {
             </span>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="max-w-md mx-auto">
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
