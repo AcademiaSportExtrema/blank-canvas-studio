@@ -431,34 +431,73 @@ export type Database = {
       empresas: {
         Row: {
           ativo: boolean
+          cep: string | null
+          cidade: string | null
+          cnpj: string | null
           created_at: string
+          email: string | null
+          endereco: string | null
+          estado: string | null
+          financeiro_cpf: string | null
+          financeiro_email: string | null
+          financeiro_nome: string | null
+          financeiro_telefone: string | null
           id: string
           logo_url: string | null
           nome: string
+          plano: string | null
+          razao_social: string | null
           slug: string
           subscription_status: string
+          telefone: string | null
           trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
           ativo?: boolean
+          cep?: string | null
+          cidade?: string | null
+          cnpj?: string | null
           created_at?: string
+          email?: string | null
+          endereco?: string | null
+          estado?: string | null
+          financeiro_cpf?: string | null
+          financeiro_email?: string | null
+          financeiro_nome?: string | null
+          financeiro_telefone?: string | null
           id?: string
           logo_url?: string | null
           nome: string
+          plano?: string | null
+          razao_social?: string | null
           slug: string
           subscription_status?: string
+          telefone?: string | null
           trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
           ativo?: boolean
+          cep?: string | null
+          cidade?: string | null
+          cnpj?: string | null
           created_at?: string
+          email?: string | null
+          endereco?: string | null
+          estado?: string | null
+          financeiro_cpf?: string | null
+          financeiro_email?: string | null
+          financeiro_nome?: string | null
+          financeiro_telefone?: string | null
           id?: string
           logo_url?: string | null
           nome?: string
+          plano?: string | null
+          razao_social?: string | null
           slug?: string
           subscription_status?: string
+          telefone?: string | null
           trial_ends_at?: string | null
           updated_at?: string
         }
