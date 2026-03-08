@@ -1,51 +1,58 @@
 
+Diagnóstico
 
-## Analise: O que falta no Financeiro do SaaS
+O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
 
-### O que ja temos
-- KPIs: Ativas, Inadimplentes, Canceladas, Em Trial, MRR
-- Tabela de empresas com status, valor mensal, proximo vencimento, ultimo pagamento
-- Alteracao de status inline (active/past_due/canceled/trialing)
-- Edicao de valor mensal e dia de vencimento via dialog
-- Filtro por status
+Onde isso acontece
+1. `src/pages/Upload.tsx`
+- Após concluir o upload, a tela chama `ai-analista` automaticamente.
 
-### O que falta para gestao completa de recebimentos
+2. `src/components/AnalistaIaCard.tsx`
+- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
+- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
 
-**1. Historico de Pagamentos (tabela nova `pagamentos_saas`)**
-Registrar cada pagamento recebido com: empresa_id, valor, data_pagamento, metodo (pix/boleto/cartao/transferencia), observacao, registrado_por. Sem isso nao ha rastro de quem pagou quando.
+O ponto que criou a duplicidade
+- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
+- Então qualquer lugar que execute `ai-analista` agora também envia email.
 
-**2. Acao "Registrar Pagamento" na tabela**
-Botao por empresa que abre dialog para informar valor recebido, data e metodo. Ao salvar, insere em `pagamentos_saas`, atualiza `ultimo_pagamento_em` e calcula `proximo_vencimento` automaticamente.
+Por que isso vira 2 emails
+- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
+- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
+- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
+- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
 
-**3. Calculo de dias em atraso**
-Coluna na tabela mostrando quantos dias a empresa esta em atraso (quando `proximo_vencimento < hoje` e status != canceled). Destacar em vermelho empresas com atraso > 0.
+O que encontrei que confirma isso
+- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
+- Não há email duplicado no cadastro de destinatários.
+- O padrão da imagem (08:01 e 08:18) bate exatamente com:
+  - um disparo ao abrir Dashboard
+  - outro disparo após o upload
 
-**4. Dados do responsavel financeiro na tabela**
-Exibir `financeiro_nome`, `financeiro_email`, `financeiro_telefone` (ja existem na tabela `empresas`) para facilitar cobranca sem sair da tela.
+Conclusão
+- O problema não está no cadastro de emails dos gestores.
+- O problema está no acoplamento entre “gerar análise” e “enviar email”.
+- Hoje o sistema envia email tanto:
+  - quando a análise é gerada pelo Dashboard
+  - quanto quando a análise é gerada após o upload
 
-**5. Exportar CSV**
-Botao para exportar a tabela filtrada em CSV para controle externo.
+Correção recomendada
+- Deixar o envio automático acontecer apenas no fluxo de upload.
+- E impedir que a geração automática do card no Dashboard dispare email.
 
-### Alteracoes tecnicas
+Forma mais segura de corrigir
+- Passar um parâmetro explícito no `ai-analista`, por exemplo:
+  - `trigger_email: true` no upload
+  - `trigger_email: false` no Dashboard
+- Assim:
+  - abrir Dashboard gera/atualiza análise sem email
+  - upload concluído gera análise com email automático
+  - botão manual continua sendo reenvio manual
 
-#### Migration: criar tabela `pagamentos_saas`
-```
-id, empresa_id, valor, data_pagamento, metodo (pix/boleto/cartao/transferencia), 
-mes_referencia, observacao, registrado_por (uuid), created_at
-```
-RLS: super_admin full access.
+Alternativa
+- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
+- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
 
-#### Atualizar query em `Financeiro.tsx`
-Buscar tambem `financeiro_nome, financeiro_email, financeiro_telefone` da tabela empresas.
-
-#### Novos componentes no `Financeiro.tsx`
-- Dialog "Registrar Pagamento" com campos valor, data, metodo, observacao
-- Coluna "Dias Atraso" calculada no frontend
-- Expansao da linha ou tooltip com dados do responsavel financeiro
-- Botao exportar CSV
-- Aba ou secao de historico de pagamentos por empresa
-
-### Arquivos alterados
-- Nova migration SQL (tabela `pagamentos_saas` + RLS)
-- `src/pages/super-admin/Financeiro.tsx` (reescrever com todas as funcionalidades)
-
+Resultado esperado depois do ajuste
+- Abrir o Dashboard não manda mais email.
+- Apenas o upload concluído dispara o envio automático.
+- O botão “Reenviar por email” continua funcionando manualmente.
