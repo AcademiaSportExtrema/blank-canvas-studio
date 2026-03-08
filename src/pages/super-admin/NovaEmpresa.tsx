@@ -180,6 +180,29 @@ export default function NovaEmpresa() {
             </CardContent>
           </Card>
 
+          {/* Plano / Cobrança */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Plano e Cobrança
+              </CardTitle>
+              <CardDescription>Defina o valor mensal e o dia de vencimento da assinatura.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="valor_mensal">Valor Mensal (R$) *</Label>
+                  <Input id="valor_mensal" type="number" min="0" step="0.01" placeholder="297.00" value={form.valor_mensal} onChange={update('valor_mensal')} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dia_vencimento">Dia de Vencimento *</Label>
+                  <Input id="dia_vencimento" type="number" min="1" max="28" placeholder="10" value={form.dia_vencimento} onChange={update('dia_vencimento')} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Acesso do Administrador */}
           <Card>
             <CardHeader>
