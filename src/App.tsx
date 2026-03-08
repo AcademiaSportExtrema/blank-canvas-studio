@@ -37,7 +37,7 @@ import EmpresaDetalhes from "./pages/super-admin/EmpresaDetalhes";
 import Financeiro from "./pages/super-admin/Financeiro";
 import Integracoes from "./pages/super-admin/Integracoes";
 import Usuarios from "./pages/super-admin/Usuarios";
-import Tickets from "./pages/super-admin/Tickets";
+
 
 const queryClient = new QueryClient();
 
