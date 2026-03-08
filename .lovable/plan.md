@@ -1,58 +1,37 @@
 
-Diagnóstico
 
-O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
+## Plano: Renomear "Plataforma" para "SaaS" e expandir página Financeiro
 
-Onde isso acontece
-1. `src/pages/Upload.tsx`
-- Após concluir o upload, a tela chama `ai-analista` automaticamente.
+### 1. Renomear label no sidebar
+- `src/components/layout/AppSidebar.tsx` linha 78: mudar `label: 'Plataforma'` para `label: 'SaaS'`
 
-2. `src/components/AnalistaIaCard.tsx`
-- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
-- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
+### 2. Adicionar colunas de cobrança na tabela `empresas`
+Migration para adicionar:
+- `valor_mensal` (numeric, default 0) — valor do plano mensal
+- `dia_vencimento` (integer, default 10) — dia do mês para cobrança
+- `stripe_customer_id` (text, nullable) — ID do cliente no Stripe
+- `stripe_subscription_id` (text, nullable) — ID da assinatura no Stripe
+- `ultimo_pagamento_em` (timestamptz, nullable) — data do último pagamento recebido
+- `proximo_vencimento` (date, nullable) — próxima data de cobrança
 
-O ponto que criou a duplicidade
-- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
-- Então qualquer lugar que execute `ai-analista` agora também envia email.
+### 3. Expandir página Financeiro (`src/pages/super-admin/Financeiro.tsx`)
 
-Por que isso vira 2 emails
-- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
-- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
-- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
-- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
+**Cards de resumo (KPIs):**
+- Ativas | Inadimplentes | Canceladas | Em Trial
+- MRR (receita recorrente mensal) = soma de `valor_mensal` das ativas
 
-O que encontrei que confirma isso
-- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
-- Não há email duplicado no cadastro de destinatários.
-- O padrão da imagem (08:01 e 08:18) bate exatamente com:
-  - um disparo ao abrir Dashboard
-  - outro disparo após o upload
+**Tabela completa com colunas:**
+- Empresa | Plano | Valor Mensal | Status Assinatura | Próximo Vencimento | Último Pagamento | Trial até | Ações
 
-Conclusão
-- O problema não está no cadastro de emails dos gestores.
-- O problema está no acoplamento entre “gerar análise” e “enviar email”.
-- Hoje o sistema envia email tanto:
-  - quando a análise é gerada pelo Dashboard
-  - quanto quando a análise é gerada após o upload
+**Funcionalidades na tabela:**
+- Badge colorido por status (active=verde, past_due=amarelo, canceled=vermelho, trialing=azul)
+- Edição inline do valor mensal e dia de vencimento via dialog
+- Botão para alterar status manualmente (active/past_due/canceled)
+- Filtro por status de assinatura
+- Exibição de trial_ends_at formatado quando aplicável
 
-Correção recomendada
-- Deixar o envio automático acontecer apenas no fluxo de upload.
-- E impedir que a geração automática do card no Dashboard dispare email.
+### Arquivos alterados
+- `src/components/layout/AppSidebar.tsx` — renomear label
+- Nova migration SQL — adicionar colunas de cobrança
+- `src/pages/super-admin/Financeiro.tsx` — reescrever com KPIs, MRR, tabela completa e ações
 
-Forma mais segura de corrigir
-- Passar um parâmetro explícito no `ai-analista`, por exemplo:
-  - `trigger_email: true` no upload
-  - `trigger_email: false` no Dashboard
-- Assim:
-  - abrir Dashboard gera/atualiza análise sem email
-  - upload concluído gera análise com email automático
-  - botão manual continua sendo reenvio manual
-
-Alternativa
-- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
-- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
-
-Resultado esperado depois do ajuste
-- Abrir o Dashboard não manda mais email.
-- Apenas o upload concluído dispara o envio automático.
-- O botão “Reenviar por email” continua funcionando manualmente.
