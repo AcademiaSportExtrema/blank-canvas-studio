@@ -293,7 +293,13 @@ export default function Financeiro() {
             {isLoading ? (
               <p className="text-muted-foreground text-center py-8">Carregando...</p>
             ) : (
-              <div className="overflow-auto">
+              <div className="space-y-3">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-200 dark:bg-green-900 inline-block" /> Pago no mês</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-200 dark:bg-yellow-900 inline-block" /> Vence em 5 dias</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-destructive/20 inline-block" /> Em atraso</span>
+                </div>
+                <div className="overflow-auto">
                 <TooltipProvider>
                   <Table>
                     <TableHeader>
