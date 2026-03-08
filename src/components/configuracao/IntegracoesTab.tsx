@@ -155,6 +155,27 @@ export function IntegracoesTab() {
     }
   };
 
+  const handleSaveStripe = async () => {
+    if (!stripeSecretKey.trim()) {
+      toast.error('Informe a Secret Key do Stripe');
+      return;
+    }
+    setIsSavingStripe(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('save-integration-key', {
+        body: { key: stripeSecretKey, provider: 'stripe' },
+      });
+      if (error) throw error;
+      toast.success(data?.message || 'Configuração do Stripe salva');
+      setStripeConfigured(true);
+      setStripeSecretKey('••••••••••••');
+    } catch (err: any) {
+      toast.error('Erro ao salvar: ' + (err.message || 'Erro desconhecido'));
+    } finally {
+      setIsSavingStripe(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* AbacatePay Card */}
