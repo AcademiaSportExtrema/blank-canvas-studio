@@ -28,6 +28,7 @@ import VisaoConsultora from "./pages/VisaoConsultora";
 import Relatorios from "./pages/Relatorios";
 import Devedores from "./pages/Devedores";
 import EmpresaBloqueada from "./pages/EmpresaBloqueada";
+import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
 
 // Super Admin
@@ -156,7 +157,7 @@ const App = () => (
             } />
 
             {/* Redirects */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </ImpersonationProvider>

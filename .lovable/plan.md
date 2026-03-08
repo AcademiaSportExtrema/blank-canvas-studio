@@ -1,36 +1,58 @@
 
+Diagnóstico
 
-## Plano: Criar Landing Page institucional do MetasHub
+O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
 
-Inspirado no design da imagem (tema escuro, moderno, seções bem definidas), vou criar uma landing page completa para o produto.
+Onde isso acontece
+1. `src/pages/Upload.tsx`
+- Após concluir o upload, a tela chama `ai-analista` automaticamente.
 
-### Estrutura da página (seções)
+2. `src/components/AnalistaIaCard.tsx`
+- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
+- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
 
-1. **Navbar** — Logo "MetasHub", links (Recursos, Preços, FAQ), botões "Login" e "Começar agora"
-2. **Hero** — Título grande, subtítulo, CTA, fundo escuro com gradiente/geometria sutil
-3. **Social proof / Métricas** — 3-4 cards com números (empresas ativas, consultoras, metas batidas)
-4. **Recursos principais** — 2 cards grandes lado a lado com ícones e descrições (Dashboard, IA Coach, etc.)
-5. **Grid de funcionalidades** — 6 cards em grid 3x2 (Upload automático, Metas por nível, Ranking, Devedores, Relatórios, Multi-empresa)
-6. **Planos e Preços** — 3 cards (Starter, Pro destacado, Custom) com toggle mensal/anual
-7. **Depoimentos** — 2 cards com citações de clientes
-8. **FAQ** — Accordion com perguntas frequentes
-9. **CTA final** — Frase de impacto + botão
-10. **Footer** — Links, redes sociais, copyright
+O ponto que criou a duplicidade
+- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
+- Então qualquer lugar que execute `ai-analista` agora também envia email.
 
-### Design system
+Por que isso vira 2 emails
+- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
+- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
+- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
+- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
 
-- Fundo: preto/cinza muito escuro (`bg-[#0a0a0f]`)
-- Cards: cinza escuro com borda sutil, efeito glassmorphism leve
-- Accent: ciano/teal (como na imagem) para CTAs e destaques
-- Tipografia: branca, hierarquia clara com tamanhos grandes no hero
-- Responsivo mobile-first
+O que encontrei que confirma isso
+- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
+- Não há email duplicado no cadastro de destinatários.
+- O padrão da imagem (08:01 e 08:18) bate exatamente com:
+  - um disparo ao abrir Dashboard
+  - outro disparo após o upload
 
-### Arquivos
+Conclusão
+- O problema não está no cadastro de emails dos gestores.
+- O problema está no acoplamento entre “gerar análise” e “enviar email”.
+- Hoje o sistema envia email tanto:
+  - quando a análise é gerada pelo Dashboard
+  - quanto quando a análise é gerada após o upload
 
-| Arquivo | Ação |
-|---------|------|
-| `src/pages/LandingPage.tsx` | Criar — página completa com todas as seções |
-| `src/App.tsx` | Editar — rota `/` aponta para LandingPage em vez de redirect para `/login` |
+Correção recomendada
+- Deixar o envio automático acontecer apenas no fluxo de upload.
+- E impedir que a geração automática do card no Dashboard dispare email.
 
-A página será auto-contida (sem sidebar/layout do app). Os botões "Login" e "Começar agora" linkam para `/login` e `/cadastro`.
+Forma mais segura de corrigir
+- Passar um parâmetro explícito no `ai-analista`, por exemplo:
+  - `trigger_email: true` no upload
+  - `trigger_email: false` no Dashboard
+- Assim:
+  - abrir Dashboard gera/atualiza análise sem email
+  - upload concluído gera análise com email automático
+  - botão manual continua sendo reenvio manual
 
+Alternativa
+- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
+- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
+
+Resultado esperado depois do ajuste
+- Abrir o Dashboard não manda mais email.
+- Apenas o upload concluído dispara o envio automático.
+- O botão “Reenviar por email” continua funcionando manualmente.
