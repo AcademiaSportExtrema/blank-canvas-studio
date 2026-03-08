@@ -401,6 +401,7 @@ export default function Financeiro() {
                   </Table>
                 </TooltipProvider>
               </div>
+              </div>
             )}
           </CardContent>
         </Card>
