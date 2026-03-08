@@ -71,6 +71,8 @@ Deno.serve(async (req) => {
         financeiro_email: financeiro_email || null,
         financeiro_telefone: financeiro_telefone || null,
         financeiro_cpf: financeiro_cpf || null,
+        valor_mensal: valor_mensal ? parseFloat(valor_mensal) : 297,
+        dia_vencimento: dia_vencimento ? parseInt(dia_vencimento) : 10,
       })
       .select()
       .single();
