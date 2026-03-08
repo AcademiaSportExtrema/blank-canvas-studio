@@ -157,7 +157,7 @@ const App = () => (
             } />
 
             {/* Redirects */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </ImpersonationProvider>
