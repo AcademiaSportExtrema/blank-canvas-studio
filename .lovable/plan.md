@@ -1,47 +1,58 @@
 
+Diagnóstico
 
-## Problema
+O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
 
-A coluna "Realizado" na tabela de Meta Anual mostra R$ 0,00 porque a função RPC `get_realizado_por_mes` **não existe** no banco de dados. O componente `MetaAnualTable` chama essa RPC (linha 75), mas ela nunca foi criada no Supabase. O erro retornado é:
+Onde isso acontece
+1. `src/pages/Upload.tsx`
+- Após concluir o upload, a tela chama `ai-analista` automaticamente.
 
-> `Could not find the function public.get_realizado_por_mes(p_ano, p_empresa_id) in the schema cache`
+2. `src/components/AnalistaIaCard.tsx`
+- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
+- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
 
-## Solução
+O ponto que criou a duplicidade
+- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
+- Então qualquer lugar que execute `ai-analista` agora também envia email.
 
-Criar a função SQL `get_realizado_por_mes` no Supabase via migration. Ela deve agregar os valores da tabela `lancamentos` onde `entra_meta = true`, agrupando por mês do ano.
+Por que isso vira 2 emails
+- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
+- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
+- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
+- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
 
-### Migration SQL
+O que encontrei que confirma isso
+- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
+- Não há email duplicado no cadastro de destinatários.
+- O padrão da imagem (08:01 e 08:18) bate exatamente com:
+  - um disparo ao abrir Dashboard
+  - outro disparo após o upload
 
-Criar a função RPC que:
-1. Recebe `p_empresa_id (uuid)` e `p_ano (integer)`
-2. Consulta `lancamentos` filtrando por `empresa_id`, `entra_meta = true`, e o ano extraído de `mes_competencia` (formato `YYYY-MM`)
-3. Retorna `mes (integer)` e `total (numeric)` agrupados por mês
-4. Usa `SECURITY DEFINER` para respeitar o padrão existente, com `search_path = public`
+Conclusão
+- O problema não está no cadastro de emails dos gestores.
+- O problema está no acoplamento entre “gerar análise” e “enviar email”.
+- Hoje o sistema envia email tanto:
+  - quando a análise é gerada pelo Dashboard
+  - quanto quando a análise é gerada após o upload
 
-```sql
-CREATE OR REPLACE FUNCTION public.get_realizado_por_mes(p_empresa_id uuid, p_ano integer)
-RETURNS TABLE(mes integer, total numeric)
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT
-    EXTRACT(MONTH FROM l.data_inicio)::integer AS mes,
-    COALESCE(SUM(l.valor), 0) AS total
-  FROM public.lancamentos l
-  WHERE l.empresa_id = p_empresa_id
-    AND l.entra_meta = true
-    AND EXTRACT(YEAR FROM l.data_inicio) = p_ano
-  GROUP BY EXTRACT(MONTH FROM l.data_inicio)
-$$;
-```
+Correção recomendada
+- Deixar o envio automático acontecer apenas no fluxo de upload.
+- E impedir que a geração automática do card no Dashboard dispare email.
 
-**Nota sobre o campo de data:** A tabela `lancamentos` tem `data_inicio`, `data_lancamento` e `mes_competencia`. Usarei `data_inicio` pois é o campo usado no hook `useMetaSemanal` para agrupar vendas por semana, mantendo consistência. O `mes_competencia` é texto (`YYYY-MM`) e poderia ser alternativa, mas `data_inicio` é mais preciso.
+Forma mais segura de corrigir
+- Passar um parâmetro explícito no `ai-analista`, por exemplo:
+  - `trigger_email: true` no upload
+  - `trigger_email: false` no Dashboard
+- Assim:
+  - abrir Dashboard gera/atualiza análise sem email
+  - upload concluído gera análise com email automático
+  - botão manual continua sendo reenvio manual
 
-### Arquivo alterado
-- Nova migration SQL com a função `get_realizado_por_mes`
+Alternativa
+- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
+- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
 
-### Nenhuma alteração no frontend
-O componente `MetaAnualTable` já está preparado para consumir o resultado dessa RPC (linhas 72-93). Assim que a função existir, os dados aparecerão automaticamente.
-
+Resultado esperado depois do ajuste
+- Abrir o Dashboard não manda mais email.
+- Apenas o upload concluído dispara o envio automático.
+- O botão “Reenviar por email” continua funcionando manualmente.
