@@ -141,6 +141,7 @@ export default function Relatorios() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
   const [metaAnualAno, setMetaAnualAno] = useState(() => new Date().getFullYear());
+  const { realizadoPorMes: metaAnualRealizadoArr } = useRealizadoMensal(empresaId, metaAnualAno);
 
   // Query 1: lancamentos entra_meta = true (vendas normais)
   const { data: lancamentos, isLoading } = useQuery({
