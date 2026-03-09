@@ -45,48 +45,48 @@ const COLORS = {
 const FEATURES_MAIN = [
   {
     icon: BarChart3,
-    title: "Dashboard inteligente",
+    title: "Pare de adivinhar se vai bater a meta",
     description:
-      "Visualize receita, ticket médio, ranking e tendências em tempo real. Gráficos interativos que transformam dados em decisões.",
+      "Veja o progresso do time em tempo real e aja antes de perder a semana. Sem esperar o fechamento do mês.",
   },
   {
     icon: Brain,
-    title: "IA Coach personalizado",
+    title: "Cada consultora melhora sozinha",
     description:
-      "Inteligência artificial que analisa o desempenho e gera dicas diárias para cada consultora alcançar suas metas.",
+      "Dicas personalizadas baseadas no histórico de cada uma. O time se motiva sozinho — você só acompanha os resultados.",
   },
 ];
 
 const FEATURES_GRID = [
   {
     icon: Upload,
-    title: "Upload automático",
-    description: "Importe planilhas XLS do ERP e o sistema classifica tudo automaticamente com regras configuráveis.",
+    title: "10 segundos para importar",
+    description: "Importe a planilha do ERP sem digitação e sem erro humano. O sistema classifica tudo.",
   },
   {
     icon: Target,
-    title: "Metas por nível",
-    description: "Defina faixas de comissão, metas semanais e distribua pesos por consultora com total flexibilidade.",
+    title: "Comissões no automático",
+    description: "Configure faixas uma vez. O sistema calcula quanto cada consultora ganha.",
   },
   {
     icon: Trophy,
-    title: "Ranking & gamificação",
-    description: "Ranking em tempo real com medalhas. Engaje o time com competição saudável e transparência.",
+    title: "O time se cobra sozinho",
+    description: "Ranking visível = competição saudável sem você precisar pressionar ninguém.",
   },
   {
     icon: ShieldCheck,
-    title: "Gestão de devedores",
-    description: "Controle parcelas vencidas, registre cobranças e acompanhe o status de pagamento de cada cliente.",
+    title: "Nunca mais perca dinheiro",
+    description: "Saiba quem deve, quanto e há quantos dias. Cobrança organizada sem planilha.",
   },
   {
     icon: FileText,
-    title: "Relatórios completos",
-    description: "Fechamento de caixa, meta anual e relatórios exportáveis para análises estratégicas.",
+    title: "Fechamento em 1 clique",
+    description: "Relatório de caixa pronto para contabilidade ou diretoria. Exporta na hora.",
   },
   {
     icon: Building2,
-    title: "Multi-empresa (SaaS)",
-    description: "Gerencie várias unidades em uma única plataforma com isolamento total de dados e usuários.",
+    title: "2 lojas ou 50, tudo junto",
+    description: "Cada unidade isolada, você vê tudo em um só painel.",
   },
 ];
 
@@ -125,13 +125,13 @@ const PLANS = [
 const TESTIMONIALS = [
   {
     quote:
-      "O MetasHub transformou a forma como acompanhamos nossas metas. Antes era tudo em planilha, agora temos visibilidade total em tempo real.",
+      "Antes eu só sabia se tinha batido a meta no dia 5 do mês seguinte. Agora acompanho em tempo real e consigo agir na hora certa. Resultado: 3 meses seguidos acima da meta.",
     author: "Carla Mendes",
     role: "Gerente Comercial — Beleza Pura",
   },
   {
     quote:
-      "A funcionalidade de IA Coach motivou nossas consultoras de um jeito que nunca imaginei. O time bateu a meta por 3 meses consecutivos.",
+      "O ranking mudou o clima do time. As consultoras começaram a se cobrar sozinhas. Em 60 dias, a equipe aumentou o faturamento em 22%.",
     author: "Ricardo Alves",
     role: "Diretor — Rede FitClub",
   },
@@ -242,14 +242,14 @@ const LandingPage = () => {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
-            Transforme metas em{" "}
+            Sua equipe vendendo mais.{" "}
             <span className="bg-gradient-to-r from-[hsl(174,72%,56%)] to-[hsl(199,89%,48%)] bg-clip-text text-transparent">
-              resultados reais
+              Todo mês.
             </span>
           </h1>
 
           <p className={`text-lg md:text-xl ${COLORS.textSecondary} max-w-2xl mx-auto mb-10 leading-relaxed`}>
-            Dashboard inteligente, IA Coach, rankings e relatórios completos para equipes de vendas que querem bater metas todos os meses.
+            Chega de planilhas perdidas e metas batidas no escuro. Veja quem está performando, quem precisa de ajuda e quanto falta — tudo em tempo real.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -279,10 +279,10 @@ const LandingPage = () => {
       <section id="recursos" className="px-6 pb-20 scroll-mt-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Tudo que você precisa em um só lugar
+            O que muda no seu dia a dia
           </h2>
           <p className={`text-center ${COLORS.textSecondary} mb-12 max-w-xl mx-auto`}>
-            Recursos pensados para gestores que precisam de agilidade, clareza e resultados.
+            Menos planilha, mais resultado. Veja como o MetasHub resolve seus maiores problemas.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -322,10 +322,10 @@ const LandingPage = () => {
       <section id="precos" className="px-6 pb-20 scroll-mt-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Planos que cabem no seu bolso
+            Comece a ver resultados em menos de 7 dias
           </h2>
           <p className={`text-center ${COLORS.textSecondary} mb-8 max-w-xl mx-auto`}>
-            Teste grátis por 30 dias. Sem cartão de crédito.
+            Teste grátis por 30 dias. Sem cartão de crédito, sem compromisso.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -426,10 +426,10 @@ const LandingPage = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-[hsl(174,72%,56%,0.08)] to-transparent pointer-events-none" />
           <div className="relative">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Pronto para bater todas as metas?
+              Você está a 30 dias de ter uma equipe que bate meta sozinha
             </h2>
             <p className={`${COLORS.textSecondary} mb-8 max-w-lg mx-auto`}>
-              Teste grátis por 30 dias. Sem cartão de crédito, sem compromisso.
+              Comece agora, sem cartão de crédito. Veja os resultados antes de pagar.
             </p>
             <Button
               size="lg"

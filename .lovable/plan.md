@@ -1,46 +1,58 @@
 
+Diagnóstico
 
-## Reescrever Copy da Landing Page — Foco em Benefícios
+O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
 
-### O que já foi feito
-- Badge do hero corrigido para "Gestão de metas comerciais simplificada"
+Onde isso acontece
+1. `src/pages/Upload.tsx`
+- Após concluir o upload, a tela chama `ai-analista` automaticamente.
 
-### O que falta implementar
+2. `src/components/AnalistaIaCard.tsx`
+- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
+- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
 
-Todas as alterações em `src/pages/LandingPage.tsx`:
+O ponto que criou a duplicidade
+- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
+- Então qualquer lugar que execute `ai-analista` agora também envia email.
 
-#### 1. Hero Section (linhas 244-253)
-- **Headline:** "Transforme metas em resultados reais" → **"Sua equipe vendendo mais. Todo mês."**
-- **Subtítulo:** Trocar descrição de features por: **"Chega de planilhas perdidas e metas batidas no escuro. Veja quem está performando, quem precisa de ajuda e quanto falta — tudo em tempo real."**
+Por que isso vira 2 emails
+- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
+- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
+- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
+- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
 
-#### 2. FEATURES_MAIN (linhas 45-58)
-Reescrever com abordagem dor → solução:
+O que encontrei que confirma isso
+- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
+- Não há email duplicado no cadastro de destinatários.
+- O padrão da imagem (08:01 e 08:18) bate exatamente com:
+  - um disparo ao abrir Dashboard
+  - outro disparo após o upload
 
-| Atual | Novo título | Nova descrição |
-|-------|------------|----------------|
-| "Dashboard inteligente" + descrição técnica | "Pare de adivinhar se vai bater a meta" | "Veja o progresso do time em tempo real e aja antes de perder a semana. Sem esperar o fechamento do mês." |
-| "IA Coach personalizado" + descrição técnica | "Cada consultora melhora sozinha" | "Dicas personalizadas baseadas no histórico de cada uma. O time se motiva sozinho — você só acompanha os resultados." |
+Conclusão
+- O problema não está no cadastro de emails dos gestores.
+- O problema está no acoplamento entre “gerar análise” e “enviar email”.
+- Hoje o sistema envia email tanto:
+  - quando a análise é gerada pelo Dashboard
+  - quanto quando a análise é gerada após o upload
 
-#### 3. FEATURES_GRID (linhas 60-91)
-Reescrever os 6 cards:
+Correção recomendada
+- Deixar o envio automático acontecer apenas no fluxo de upload.
+- E impedir que a geração automática do card no Dashboard dispare email.
 
-| Atual | Novo título | Nova descrição |
-|-------|------------|----------------|
-| Upload automático | "10 segundos para importar" | "Importe a planilha do ERP sem digitação e sem erro humano. O sistema classifica tudo." |
-| Metas por nível | "Comissões no automático" | "Configure faixas uma vez. O sistema calcula quanto cada consultora ganha." |
-| Ranking & gamificação | "O time se cobra sozinho" | "Ranking visível = competição saudável sem você precisar pressionar ninguém." |
-| Gestão de devedores | "Nunca mais perca dinheiro" | "Saiba quem deve, quanto e há quantos dias. Cobrança organizada sem planilha." |
-| Relatórios completos | "Fechamento em 1 clique" | "Relatório de caixa pronto para contabilidade ou diretoria. Exporta na hora." |
-| Multi-empresa | "2 lojas ou 50, tudo junto" | "Cada unidade isolada, você vê tudo em um só painel." |
+Forma mais segura de corrigir
+- Passar um parâmetro explícito no `ai-analista`, por exemplo:
+  - `trigger_email: true` no upload
+  - `trigger_email: false` no Dashboard
+- Assim:
+  - abrir Dashboard gera/atualiza análise sem email
+  - upload concluído gera análise com email automático
+  - botão manual continua sendo reenvio manual
 
-#### 4. Títulos de seção e CTA
-- Seção de recursos: "Tudo que você precisa em um só lugar" → **"O que muda no seu dia a dia"**
-- CTA final: "Pronto para bater todas as metas?" → **"Você está a 30 dias de ter uma equipe que bate meta sozinha"**
-- Seção de preços: título ajustado para **"Comece a ver resultados em menos de 7 dias"**
+Alternativa
+- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
+- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
 
-#### 5. Depoimentos (se existentes)
-Tornar mais específicos com resultados tangíveis.
-
-### Arquivo alterado
-- `src/pages/LandingPage.tsx` — constantes de dados + textos inline nas seções hero, features, preços e CTA
-
+Resultado esperado depois do ajuste
+- Abrir o Dashboard não manda mais email.
+- Apenas o upload concluído dispara o envio automático.
+- O botão “Reenviar por email” continua funcionando manualmente.
