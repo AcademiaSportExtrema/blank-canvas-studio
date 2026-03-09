@@ -1,58 +1,26 @@
 
-Diagnóstico
 
-O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
+## Dois cards lado a lado: Mensal e Anual
 
-Onde isso acontece
-1. `src/pages/Upload.tsx`
-- Após concluir o upload, a tela chama `ai-analista` automaticamente.
+Remover o toggle mensal/anual e mostrar **dois cards lado a lado**:
 
-2. `src/components/AnalistaIaCard.tsx`
-- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
-- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
+### Card 1 — Mensal
+- **R$ 297/mês**
+- Texto: "Cobrança mensal, cancele quando quiser"
+- Botão: "Começar grátis"
+- Lista de features
 
-O ponto que criou a duplicidade
-- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
-- Então qualquer lugar que execute `ai-analista` agora também envia email.
+### Card 2 — Anual (destacado)
+- **R$ 3.024/ano** (valor cheio à vista)
+- Subtexto: "Equivale a R$ 252/mês — economia de 15%"
+- Badge "Mais popular" ou "-15%"
+- Botão: "Começar grátis"
+- Mesma lista de features
 
-Por que isso vira 2 emails
-- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
-- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
-- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
-- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
+### Mudanças em `src/pages/LandingPage.tsx`
 
-O que encontrei que confirma isso
-- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
-- Não há email duplicado no cadastro de destinatários.
-- O padrão da imagem (08:01 e 08:18) bate exatamente com:
-  - um disparo ao abrir Dashboard
-  - outro disparo após o upload
+1. **Remover** o state `annual` e o bloco do toggle (linhas ~345-359)
+2. **Substituir** o array `PLANS` por dois objetos: um mensal (R$ 297/mês) e um anual (R$ 3.024/ano, equivale a R$ 252/mês)
+3. **Trocar** o layout de `max-w-md mx-auto` para `grid md:grid-cols-2 gap-6 max-w-3xl mx-auto`
+4. Card anual recebe `highlighted: true` com borda ciano e glow; card mensal fica com estilo padrão
 
-Conclusão
-- O problema não está no cadastro de emails dos gestores.
-- O problema está no acoplamento entre “gerar análise” e “enviar email”.
-- Hoje o sistema envia email tanto:
-  - quando a análise é gerada pelo Dashboard
-  - quanto quando a análise é gerada após o upload
-
-Correção recomendada
-- Deixar o envio automático acontecer apenas no fluxo de upload.
-- E impedir que a geração automática do card no Dashboard dispare email.
-
-Forma mais segura de corrigir
-- Passar um parâmetro explícito no `ai-analista`, por exemplo:
-  - `trigger_email: true` no upload
-  - `trigger_email: false` no Dashboard
-- Assim:
-  - abrir Dashboard gera/atualiza análise sem email
-  - upload concluído gera análise com email automático
-  - botão manual continua sendo reenvio manual
-
-Alternativa
-- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
-- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
-
-Resultado esperado depois do ajuste
-- Abrir o Dashboard não manda mais email.
-- Apenas o upload concluído dispara o envio automático.
-- O botão “Reenviar por email” continua funcionando manualmente.
