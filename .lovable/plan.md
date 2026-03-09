@@ -1,58 +1,56 @@
 
-Diagnóstico
 
-O sistema está enviando dois emails porque hoje existem dois gatilhos automáticos diferentes para gerar a análise, e agora toda geração da análise também dispara email.
+## Divergências Identificadas entre Dashboard e Relatórios
 
-Onde isso acontece
-1. `src/pages/Upload.tsx`
-- Após concluir o upload, a tela chama `ai-analista` automaticamente.
+Após comparar os dois projetos (MetaHub original e MetasHUB2 atual), identifiquei as seguintes divergências nas somatórias:
 
-2. `src/components/AnalistaIaCard.tsx`
-- Ao abrir o Dashboard, o card do Analista IA verifica se já existe análise “de hoje”.
-- Se não existir, ele chama `fetchAnalise()`, que também executa `ai-analista` automaticamente.
+### Divergência 1: "Realizado Gerencial" no Dashboard vs "Realizado" na Meta Anual (Relatórios)
 
-O ponto que criou a duplicidade
-- Em `supabase/functions/ai-analista/index.ts`, a função foi alterada para chamar `send-analise-email` logo após salvar a análise.
-- Então qualquer lugar que execute `ai-analista` agora também envia email.
+**Dashboard** (linha 233-245): Usa a RPC `get_realizado_por_mes` que soma **TODOS** os lançamentos por `data_inicio`, sem nenhum filtro de `entra_meta`, sem excluir lançamentos com meses cruzados, sem incluir Wellhub/Total Pass/Entuspass.
 
-Por que isso vira 2 emails
-- Se alguém abre o Dashboard de manhã, o card pode gerar a análise e mandar email.
-- Depois, quando o upload é feito, o Upload chama `ai-analista` de novo e manda outro email.
-- A trava atual em `send-analise-email` bloqueia repetição só por 5 minutos.
-- Então dois disparos com intervalo maior que 5 minutos passam normalmente.
+**Relatórios → Meta Anual** (linha 818-839): Agora usa a lógica da Tabela 2 (duration filtering + Wellhub + Total Pass + Entuspass), que é a lógica correta segundo o último ajuste.
 
-O que encontrei que confirma isso
-- Há apenas 1 upload recente hoje, então não parece ser clique duplo no upload.
-- Não há email duplicado no cadastro de destinatários.
-- O padrão da imagem (08:01 e 08:18) bate exatamente com:
-  - um disparo ao abrir Dashboard
-  - outro disparo após o upload
+**Resultado**: O card "Meta Gerencial" no Dashboard mostra um valor diferente do "Realizado" na Meta Anual dos Relatórios para o mesmo mês.
 
-Conclusão
-- O problema não está no cadastro de emails dos gestores.
-- O problema está no acoplamento entre “gerar análise” e “enviar email”.
-- Hoje o sistema envia email tanto:
-  - quando a análise é gerada pelo Dashboard
-  - quanto quando a análise é gerada após o upload
+### Divergência 2: "Total Vendido" no Dashboard
 
-Correção recomendada
-- Deixar o envio automático acontecer apenas no fluxo de upload.
-- E impedir que a geração automática do card no Dashboard dispare email.
+**Dashboard** (linha 182-193): Soma lançamentos com `entra_meta=true` e `mes_competencia = mesSelecionado`. Não aplica o filtro de duração (excluir registros onde `data_inicio` e `data_lancamento` estão em meses diferentes), e não inclui Entuspass/Wellhub/Total Pass.
 
-Forma mais segura de corrigir
-- Passar um parâmetro explícito no `ai-analista`, por exemplo:
-  - `trigger_email: true` no upload
-  - `trigger_email: false` no Dashboard
-- Assim:
-  - abrir Dashboard gera/atualiza análise sem email
-  - upload concluído gera análise com email automático
-  - botão manual continua sendo reenvio manual
+**Relatórios Tabela 2**: Aplica filtros de duração e inclui agregadores. Os totais serão diferentes.
 
-Alternativa
-- Tirar o envio automático de dentro de `ai-analista` e fazer o upload chamar o envio separadamente.
-- Também funciona, mas a abordagem com flag costuma ser mais simples e previsível.
+### Divergência 3: MetaHub original não passa realizadoPorMes
 
-Resultado esperado depois do ajuste
-- Abrir o Dashboard não manda mais email.
-- Apenas o upload concluído dispara o envio automático.
-- O botão “Reenviar por email” continua funcionando manualmente.
+O projeto MetaHub original (linha 815) chama `<MetaAnualTable empresaId={empresaId} ano={metaAnualAno} />` **sem** a prop `realizadoPorMes`, então usa o fallback da RPC. O MetasHUB2 já corrigiu isso passando a prop.
+
+---
+
+## Plano de Correção
+
+### 1. Corrigir o "Realizado Gerencial" no Dashboard
+O Dashboard usa a RPC para calcular o `realizadoGerencial` (card de Meta Gerencial). Precisa usar a mesma lógica da Tabela 2.
+
+**Alteração em `src/pages/Dashboard.tsx`**:
+- Adicionar queries para `pagamentos_agregadores` e lançamentos `entuspass` (entra_meta=false com plano ENTUSPASS/SPORT PASS)
+- Aplicar a mesma lógica de classificação por duração e filtragem de meses cruzados
+- Calcular o realizado gerencial no frontend em vez de usar a RPC
+
+Isso é complexo porque requer replicar a lógica de Relatórios no Dashboard. A abordagem mais limpa seria **extrair a lógica de cálculo da Tabela 2 para um hook reutilizável** e usá-lo tanto em Relatórios quanto no Dashboard.
+
+### 2. Criar hook `useRealizadoMensal`
+Novo hook em `src/hooks/useRealizadoMensal.ts` que:
+- Recebe `empresaId` e opcionalmente um `mes` ou `ano`
+- Busca lançamentos `entra_meta=true`, lançamentos entuspass, e pagamentos agregadores
+- Aplica a lógica de duração (filtro de meses cruzados, recorrente por data_lancamento)
+- Retorna o total por mês, consistente com a Tabela 2
+
+### 3. Usar o hook no Dashboard
+Substituir a query `realizadoGerencial` (que usa a RPC) pelo novo hook, garantindo que o card de Meta Gerencial mostre o mesmo valor que a Meta Anual nos Relatórios.
+
+### 4. Usar o hook em Relatórios
+Substituir a lógica inline de cálculo do `realizadoPorMes` no Relatórios pelo mesmo hook, eliminando duplicação.
+
+### Arquivos alterados
+- **Novo**: `src/hooks/useRealizadoMensal.ts` — hook com lógica da Tabela 2
+- **Editado**: `src/pages/Dashboard.tsx` — usar hook para realizadoGerencial
+- **Editado**: `src/pages/Relatorios.tsx` — usar hook para realizadoPorMes (opcional, para eliminar duplicação)
+
