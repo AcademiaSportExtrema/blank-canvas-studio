@@ -44,11 +44,11 @@ const COLORS = {
 };
 
 /* ─── Data ─── */
-const METRICS = [
-  { value: "200+", label: "Empresas ativas", icon: Building2 },
-  { value: "3.500+", label: "Consultoras gerenciadas", icon: Users },
-  { value: "R$ 48M+", label: "Em metas acompanhadas", icon: TrendingUp },
-  { value: "99,9%", label: "Uptime garantido", icon: Zap },
+const SCREENSHOTS = [
+  { src: "/screenshots/dashboard.png", label: "Dashboard completo" },
+  { src: "/screenshots/dashboard.png", label: "Gestão de Metas" },
+  { src: "/screenshots/dashboard.png", label: "Rankings e Performance" },
+  { src: "/screenshots/dashboard.png", label: "Relatórios detalhados" },
 ];
 
 const FEATURES_MAIN = [
