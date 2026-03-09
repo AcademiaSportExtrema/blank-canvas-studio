@@ -274,35 +274,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ══════ SCREENSHOTS ══════ */}
-      <section className="px-6 pb-20">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Conheça o sistema
-          </h2>
-          <p className={`text-center ${COLORS.textSecondary} mb-10 max-w-xl mx-auto`}>
-            Veja como o MetasHub funciona na prática.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {SCREENSHOTS.map((s) => (
-              <div
-                key={s.label}
-                className={`${COLORS.bgCard} ${COLORS.border} border rounded-xl overflow-hidden`}
-              >
-                <img
-                  src={s.src}
-                  alt={s.label}
-                  className="w-full aspect-video object-cover"
-                  loading="lazy"
-                />
-                <div className="p-4 text-center">
-                  <span className={`text-sm font-medium ${COLORS.textSecondary}`}>{s.label}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ══════ MAIN FEATURES ══════ */}
       <section id="recursos" className="px-6 pb-20 scroll-mt-24">
