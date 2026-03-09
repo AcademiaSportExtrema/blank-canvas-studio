@@ -279,10 +279,10 @@ const LandingPage = () => {
       <section id="recursos" className="px-6 pb-20 scroll-mt-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Tudo que você precisa em um só lugar
+            O que muda no seu dia a dia
           </h2>
           <p className={`text-center ${COLORS.textSecondary} mb-12 max-w-xl mx-auto`}>
-            Recursos pensados para gestores que precisam de agilidade, clareza e resultados.
+            Menos planilha, mais resultado. Veja como o MetasHub resolve seus maiores problemas.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6">
