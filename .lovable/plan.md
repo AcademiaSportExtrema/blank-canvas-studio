@@ -1,23 +1,28 @@
 
 
-## Corrigir roles para usuários @sportextrema
+## Problema: Race Condition no Login
 
-### Diagnóstico
-Os 5 registros em `user_roles` para as consultoras @sportextrema existem, mas os `user_id` provavelmente **não correspondem** aos IDs reais dos usuários em `auth.users`. Isso explica o erro "Failed to fetch user role: null" — o SELECT filtra por `user_id = auth.uid()` e não encontra nada.
+Após o login, existe um breve momento onde:
+- `isLoading = false` (definido no bootstrap)
+- `user = set` (definido pelo onAuthStateChange)
+- `role = null` (fetch ainda não iniciou)
 
-Não é possível consultar `auth.users` via SQL direto. Precisamos usar a Admin API via edge function.
+Isso faz o Login.tsx interpretar como "usuário sem permissão" e chamar `signOut()`.
 
-### Plano
+## Correção
 
-**Criar edge function temporária `fix-sportextrema-roles`** que:
-1. Lista todos os auth users com `listUsers()`
-2. Filtra os que têm email `@sportextrema`
-3. Para cada um, busca a consultora correspondente pelo email na tabela `consultoras`
-4. Atualiza ou insere o `user_roles` com o `user_id` correto do Auth, `role: consultora`, `consultora_id` e `empresa_id`
-5. Retorna um relatório do que foi feito
+### `src/hooks/useAuth.tsx`
+No callback do `onAuthStateChange`, quando uma sessão é detectada (novo login), definir `isLoading = true` **imediatamente** antes que o efeito de fetch do role execute. Isso garante que o Login.tsx não entre na condição `!authLoading && user && !role` prematuramente.
 
-Depois de executar, a function pode ser removida.
+```ts
+// No onAuthStateChange callback:
+if (session?.user) {
+  setIsLoading(true);  // ← adicionar esta linha
+}
+```
 
-### Arquivo
-- **`supabase/functions/fix-sportextrema-roles/index.ts`** — edge function one-time que sincroniza os user_ids corretos
+Isso fecha a janela de race condition: `isLoading` será `true` desde o momento que o user é setado até o fetch do role completar.
+
+### Arquivo alterado
+- **`src/hooks/useAuth.tsx`** — Adicionar `setIsLoading(true)` no onAuthStateChange quando há sessão
 
