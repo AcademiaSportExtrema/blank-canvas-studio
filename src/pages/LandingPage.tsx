@@ -60,33 +60,33 @@ const FEATURES_MAIN = [
 const FEATURES_GRID = [
   {
     icon: Upload,
-    title: "Upload automático",
-    description: "Importe planilhas XLS do ERP e o sistema classifica tudo automaticamente com regras configuráveis.",
+    title: "10 segundos para importar",
+    description: "Importe a planilha do ERP sem digitação e sem erro humano. O sistema classifica tudo.",
   },
   {
     icon: Target,
-    title: "Metas por nível",
-    description: "Defina faixas de comissão, metas semanais e distribua pesos por consultora com total flexibilidade.",
+    title: "Comissões no automático",
+    description: "Configure faixas uma vez. O sistema calcula quanto cada consultora ganha.",
   },
   {
     icon: Trophy,
-    title: "Ranking & gamificação",
-    description: "Ranking em tempo real com medalhas. Engaje o time com competição saudável e transparência.",
+    title: "O time se cobra sozinho",
+    description: "Ranking visível = competição saudável sem você precisar pressionar ninguém.",
   },
   {
     icon: ShieldCheck,
-    title: "Gestão de devedores",
-    description: "Controle parcelas vencidas, registre cobranças e acompanhe o status de pagamento de cada cliente.",
+    title: "Nunca mais perca dinheiro",
+    description: "Saiba quem deve, quanto e há quantos dias. Cobrança organizada sem planilha.",
   },
   {
     icon: FileText,
-    title: "Relatórios completos",
-    description: "Fechamento de caixa, meta anual e relatórios exportáveis para análises estratégicas.",
+    title: "Fechamento em 1 clique",
+    description: "Relatório de caixa pronto para contabilidade ou diretoria. Exporta na hora.",
   },
   {
     icon: Building2,
-    title: "Multi-empresa (SaaS)",
-    description: "Gerencie várias unidades em uma única plataforma com isolamento total de dados e usuários.",
+    title: "2 lojas ou 50, tudo junto",
+    description: "Cada unidade isolada, você vê tudo em um só painel.",
   },
 ];
 
