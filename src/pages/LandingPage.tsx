@@ -242,14 +242,14 @@ const LandingPage = () => {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
-            Transforme metas em{" "}
+            Sua equipe vendendo mais.{" "}
             <span className="bg-gradient-to-r from-[hsl(174,72%,56%)] to-[hsl(199,89%,48%)] bg-clip-text text-transparent">
-              resultados reais
+              Todo mês.
             </span>
           </h1>
 
           <p className={`text-lg md:text-xl ${COLORS.textSecondary} max-w-2xl mx-auto mb-10 leading-relaxed`}>
-            Dashboard inteligente, IA Coach, rankings e relatórios completos para equipes de vendas que querem bater metas todos os meses.
+            Chega de planilhas perdidas e metas batidas no escuro. Veja quem está performando, quem precisa de ajuda e quanto falta — tudo em tempo real.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
