@@ -99,22 +99,34 @@ const FEATURES_GRID = [
   },
 ];
 
+const FEATURES_LIST = [
+  "Dashboard completo em tempo real",
+  "Upload e importação de planilhas",
+  "Metas, comissões e ranking",
+  "IA Coach personalizado",
+  "Análise automática por IA",
+  "Gestão de devedores",
+  "Relatórios avançados",
+  "Multi-empresa (SaaS)",
+  "Suporte prioritário",
+];
+
 const PLANS = [
   {
-    name: "MetasHub Pro",
-    price: { monthly: 297, annual: 252 },
-    description: "Plano completo para sua operação comercial",
-    features: [
-      "Dashboard completo em tempo real",
-      "Upload e importação de planilhas",
-      "Metas, comissões e ranking",
-      "IA Coach personalizado",
-      "Análise automática por IA",
-      "Gestão de devedores",
-      "Relatórios avançados",
-      "Multi-empresa (SaaS)",
-      "Suporte prioritário",
-    ],
+    name: "Mensal",
+    priceLabel: "R$ 297",
+    priceSuffix: "/mês",
+    subtitle: "Cobrança mensal, cancele quando quiser",
+    features: FEATURES_LIST,
+    highlighted: false,
+  },
+  {
+    name: "Anual",
+    priceLabel: "R$ 3.024",
+    priceSuffix: "/ano à vista",
+    subtitle: "Equivale a R$ 252/mês — economia de 15%",
+    badge: "-15%",
+    features: FEATURES_LIST,
     highlighted: true,
   },
 ];
@@ -166,7 +178,6 @@ const NAV_LINKS = [
 /* ─── Components ─── */
 
 const LandingPage = () => {
-  const [annual, setAnnual] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
 
   return (
@@ -342,23 +353,7 @@ const LandingPage = () => {
             Comece grátis por 14 dias. Sem cartão de crédito.
           </p>
 
-          {/* Toggle */}
-          <div className="flex items-center justify-center gap-3 mb-12">
-            <span className={`text-sm ${!annual ? "text-white" : COLORS.textSecondary}`}>Mensal</span>
-            <button
-              onClick={() => setAnnual(!annual)}
-              className={`relative w-12 h-6 rounded-full transition ${annual ? COLORS.accentBg : "bg-white/20"}`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${annual ? "translate-x-6" : ""}`}
-              />
-            </button>
-            <span className={`text-sm ${annual ? "text-white" : COLORS.textSecondary}`}>
-              Anual <span className="text-[hsl(174,72%,56%)] text-xs font-medium">-15%</span>
-            </span>
-          </div>
-
-          <div className="max-w-md mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
@@ -368,26 +363,18 @@ const LandingPage = () => {
                     : `${COLORS.border} ${COLORS.bgCard}`
                 }`}
               >
-                {plan.highlighted && (
+                {"badge" in plan && plan.badge && (
                   <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${COLORS.accentBg} text-black mb-4`}>
-                    Mais popular
+                    {plan.badge}
                   </div>
                 )}
                 <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                <p className={`text-sm ${COLORS.textSecondary} mb-5`}>{plan.description}</p>
+                <p className={`text-sm ${COLORS.textSecondary} mb-5`}>{plan.subtitle}</p>
 
-                {plan.price.monthly !== null ? (
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold">
-                      R$ {annual ? plan.price.annual : plan.price.monthly}
-                    </span>
-                    <span className={`text-sm ${COLORS.textSecondary}`}>/mês</span>
-                  </div>
-                ) : (
-                  <div className="mb-6">
-                    <span className="text-2xl font-bold">Sob consulta</span>
-                  </div>
-                )}
+                <div className="mb-6">
+                  <span className="text-4xl font-bold">{plan.priceLabel}</span>
+                  <span className={`text-sm ${COLORS.textSecondary}`}>{plan.priceSuffix}</span>
+                </div>
 
                 <Button
                   className={`w-full mb-6 ${
@@ -397,9 +384,7 @@ const LandingPage = () => {
                   }`}
                   asChild
                 >
-                  <Link to="/cadastro">
-                    {plan.price.monthly !== null ? "Começar grátis" : "Falar com vendas"}
-                  </Link>
+                  <Link to="/cadastro">Começar grátis</Link>
                 </Button>
 
                 <ul className="space-y-3">
