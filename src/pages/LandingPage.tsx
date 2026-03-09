@@ -15,9 +15,6 @@ import {
   X,
   ArrowRight,
   Sparkles,
-  Users,
-  TrendingUp,
-  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
