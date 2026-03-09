@@ -394,7 +394,7 @@ const LandingPage = () => {
                   }`}
                   asChild
                 >
-                  <Link to="/cadastro">Começar grátis</Link>
+                  <Link to="/cadastro">Teste grátis — 30 dias</Link>
                 </Button>
 
                 <ul className="space-y-3">
