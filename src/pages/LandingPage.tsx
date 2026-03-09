@@ -154,7 +154,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Posso testar antes de assinar?",
-    a: "Sim! Oferecemos 14 dias de teste grátis com acesso completo a todas as funcionalidades do plano Pro.",
+    a: "Sim! Oferecemos 30 dias de teste grátis com acesso completo a todas as funcionalidades do plano Pro.",
   },
   {
     q: "Meus dados estão seguros?",
@@ -201,7 +201,7 @@ const LandingPage = () => {
               <Link to="/login">Login</Link>
             </Button>
             <Button className={`${COLORS.accentBg} ${COLORS.accentBgHover} text-black font-semibold text-sm`} asChild>
-              <Link to="/cadastro">Começar grátis</Link>
+              <Link to="/cadastro">Teste grátis — 30 dias</Link>
             </Button>
           </div>
 
@@ -229,7 +229,7 @@ const LandingPage = () => {
                 <Link to="/login">Login</Link>
               </Button>
               <Button className={`${COLORS.accentBg} text-black font-semibold`} asChild>
-                <Link to="/cadastro">Começar grátis</Link>
+                <Link to="/cadastro">Teste grátis — 30 dias</Link>
               </Button>
             </div>
           </div>
@@ -265,14 +265,13 @@ const LandingPage = () => {
               asChild
             >
               <Link to="/cadastro">
-                Começar grátis — 14 dias
+                Teste grátis — 30 dias
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button
               size="lg"
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/5 text-base px-8"
+              className="bg-white text-gray-900 hover:bg-white/90 text-base px-8"
               asChild
             >
               <a href="#recursos">Ver recursos</a>
@@ -361,7 +360,7 @@ const LandingPage = () => {
             Planos que cabem no seu bolso
           </h2>
           <p className={`text-center ${COLORS.textSecondary} mb-8 max-w-xl mx-auto`}>
-            Comece grátis por 14 dias. Sem cartão de crédito.
+            Teste grátis por 30 dias. Sem cartão de crédito.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -395,7 +394,7 @@ const LandingPage = () => {
                   }`}
                   asChild
                 >
-                  <Link to="/cadastro">Começar grátis</Link>
+                  <Link to="/cadastro">Teste grátis — 30 dias</Link>
                 </Button>
 
                 <ul className="space-y-3">
@@ -465,7 +464,7 @@ const LandingPage = () => {
               Pronto para bater todas as metas?
             </h2>
             <p className={`${COLORS.textSecondary} mb-8 max-w-lg mx-auto`}>
-              Comece grátis por 14 dias. Sem cartão de crédito, sem compromisso.
+              Teste grátis por 30 dias. Sem cartão de crédito, sem compromisso.
             </p>
             <Button
               size="lg"
@@ -473,7 +472,7 @@ const LandingPage = () => {
               asChild
             >
               <Link to="/cadastro">
-                Começar agora
+                Teste grátis — 30 dias
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
