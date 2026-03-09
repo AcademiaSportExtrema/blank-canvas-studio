@@ -41,13 +41,6 @@ const COLORS = {
 };
 
 /* ─── Data ─── */
-const SCREENSHOTS = [
-  { src: "/screenshots/dashboard.png", label: "Dashboard completo" },
-  { src: "/screenshots/metas.png", label: "Gestão de Metas" },
-  { src: "/screenshots/distribuicao-semanal.png", label: "Distribuição Semanal da Meta" },
-  { src: "/screenshots/meta-consultora.png", label: "Meta por Consultora" },
-  { src: "/screenshots/niveis-comissao.png", label: "Níveis de Comissão" },
-];
 
 const FEATURES_MAIN = [
   {
