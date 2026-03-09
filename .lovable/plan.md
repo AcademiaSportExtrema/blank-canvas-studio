@@ -1,28 +1,18 @@
 
+## Correção aplicada: Unificação das somatórias Dashboard ↔ Relatórios
 
-## Problema: Race Condition no Login
+### Problema
+O Dashboard usava a RPC `get_realizado_por_mes` (soma simples por `data_inicio`) enquanto Relatórios usava lógica complexa da Tabela 2 (filtros de duração, agregadores, Entuspass). Isso causava divergências nos valores de "Realizado".
 
-Após o login, existe um breve momento onde:
-- `isLoading = false` (definido no bootstrap)
-- `user = set` (definido pelo onAuthStateChange)
-- `role = null` (fetch ainda não iniciou)
+### Solução implementada
+1. **Novo hook `useRealizadoMensal`** — centraliza a lógica da Tabela 2:
+   - Lançamentos `entra_meta=true` com filtro de meses cruzados
+   - Recorrentes contabilizados por `data_lancamento`
+   - Entuspass/Sport Pass (`entra_meta=false`)
+   - Pagamentos agregadores (Wellhub, Total Pass)
 
-Isso faz o Login.tsx interpretar como "usuário sem permissão" e chamar `signOut()`.
+2. **Dashboard** — substituiu a query RPC por `useRealizadoMensal`
+3. **Relatórios** — substituiu cálculo inline por `useRealizadoMensal`
 
-## Correção
-
-### `src/hooks/useAuth.tsx`
-No callback do `onAuthStateChange`, quando uma sessão é detectada (novo login), definir `isLoading = true` **imediatamente** antes que o efeito de fetch do role execute. Isso garante que o Login.tsx não entre na condição `!authLoading && user && !role` prematuramente.
-
-```ts
-// No onAuthStateChange callback:
-if (session?.user) {
-  setIsLoading(true);  // ← adicionar esta linha
-}
-```
-
-Isso fecha a janela de race condition: `isLoading` será `true` desde o momento que o user é setado até o fetch do role completar.
-
-### Arquivo alterado
-- **`src/hooks/useAuth.tsx`** — Adicionar `setIsLoading(true)` no onAuthStateChange quando há sessão
-
+### Resultado
+Todos os valores de "Realizado" agora usam a mesma lógica de cálculo.
