@@ -231,19 +231,11 @@ export default function Dashboard() {
   const anoSelecionado = Number(mesSelecionado.split('-')[0]);
   const mesSelecionadoNum = Number(mesSelecionado.split('-')[1]);
 
-  const { data: realizadoGerencial } = useQuery({
-    queryKey: ['dashboard-realizado-gerencial', mesSelecionado, empresaId],
-    enabled: isAdmin && !!empresaId,
-    queryFn: async () => {
-      const { data, error } = await (supabase.rpc as any)('get_realizado_por_mes', {
-        p_empresa_id: empresaId!,
-        p_ano: anoSelecionado,
-      });
-      if (error) throw error;
-      const mesData = ((data || []) as any[]).find((d: any) => d.mes === mesSelecionadoNum);
-      return mesData ? Number(mesData.total) : 0;
-    },
-  });
+  const { realizadoPorMes: realizadoArr } = useRealizadoMensal(
+    isAdmin ? empresaId : null,
+    anoSelecionado
+  );
+  const realizadoGerencial = realizadoArr[mesSelecionadoNum - 1] || 0;
 
   const { data: metaAnual } = useQuery({
     queryKey: ['dashboard-meta-anual', anoSelecionado, empresaId],

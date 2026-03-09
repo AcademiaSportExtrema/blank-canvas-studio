@@ -816,27 +816,7 @@ export default function Relatorios() {
               <MetaAnualTable
                 empresaId={empresaId}
                 ano={metaAnualAno}
-                realizadoPorMes={(() => {
-                  const arr = Array(12).fill(0);
-                  const anoStr = String(metaAnualAno);
-                  for (const mc of durationMonths) {
-                    if (!mc.startsWith(anoStr)) continue;
-                    const mesIdx = parseInt(mc.split('-')[1], 10) - 1;
-                    if (mesIdx < 0 || mesIdx > 11) continue;
-                    // Duration-based sales
-                    const durRow = durationValByMonth[mc];
-                    if (durRow) {
-                      arr[mesIdx] += DURATION_COLUMNS.reduce((s, c) => s + (durRow[c.key] || 0), 0);
-                    }
-                    // Wellhub
-                    if (wellhubByMonth[mc]) arr[mesIdx] += wellhubByMonth[mc].val;
-                    // Total Pass
-                    if (totalpassByMonth[mc]) arr[mesIdx] += totalpassByMonth[mc].val;
-                    // Entuspass / Sport Pass
-                    if (entuspassByMonth[mc]) arr[mesIdx] += entuspassByMonth[mc].val;
-                  }
-                  return arr;
-                })()}
+                realizadoPorMes={metaAnualRealizadoArr}
               />
             )}
 
