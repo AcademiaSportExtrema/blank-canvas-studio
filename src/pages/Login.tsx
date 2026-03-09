@@ -14,7 +14,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { signIn, user, role, isLoading: authLoading } = useAuth();
+  const { signIn, signOut, user, role, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -22,6 +22,11 @@ export default function Login() {
   useEffect(() => {
     if (!authLoading && user && role) {
       navigate(role === 'consultora' ? '/minha-performance' : '/dashboard', { replace: true });
+    }
+    // User authenticated but no role found — sign out and show error
+    if (!authLoading && user && !role) {
+      setError('Sua conta não possui permissões configuradas. Contate o administrador.');
+      signOut();
     }
   }, [authLoading, user, role, navigate]);
 
