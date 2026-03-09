@@ -284,19 +284,33 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ══════ METRICS ══════ */}
+      {/* ══════ SCREENSHOTS ══════ */}
       <section className="px-6 pb-20">
-        <div className="mx-auto max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-4">
-          {METRICS.map((m) => (
-            <div
-              key={m.label}
-              className={`${COLORS.bgCard} ${COLORS.border} border rounded-xl p-6 text-center`}
-            >
-              <m.icon className="h-5 w-5 mx-auto mb-3 text-[hsl(174,72%,56%)]" />
-              <div className="text-2xl md:text-3xl font-bold mb-1">{m.value}</div>
-              <div className={`text-xs ${COLORS.textSecondary}`}>{m.label}</div>
-            </div>
-          ))}
+        <div className="mx-auto max-w-5xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+            Conheça o sistema
+          </h2>
+          <p className={`text-center ${COLORS.textSecondary} mb-10 max-w-xl mx-auto`}>
+            Veja como o MetasHub funciona na prática.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {SCREENSHOTS.map((s) => (
+              <div
+                key={s.label}
+                className={`${COLORS.bgCard} ${COLORS.border} border rounded-xl overflow-hidden`}
+              >
+                <img
+                  src={s.src}
+                  alt={s.label}
+                  className="w-full aspect-video object-cover"
+                  loading="lazy"
+                />
+                <div className="p-4 text-center">
+                  <span className={`text-sm font-medium ${COLORS.textSecondary}`}>{s.label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
