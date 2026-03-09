@@ -322,10 +322,10 @@ const LandingPage = () => {
       <section id="precos" className="px-6 pb-20 scroll-mt-24">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Planos que cabem no seu bolso
+            Comece a ver resultados em menos de 7 dias
           </h2>
           <p className={`text-center ${COLORS.textSecondary} mb-8 max-w-xl mx-auto`}>
-            Teste grátis por 30 dias. Sem cartão de crédito.
+            Teste grátis por 30 dias. Sem cartão de crédito, sem compromisso.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
