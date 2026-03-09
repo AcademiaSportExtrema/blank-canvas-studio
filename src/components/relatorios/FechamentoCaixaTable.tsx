@@ -25,6 +25,19 @@ const PAYMENT_COLS = [
 
 const PIX_KEYS = ['PIX INTER', 'PIX SICRED'];
 
+// Column letters for spreadsheet-like reference
+const ALL_COL_LABELS = [
+  'A', 'B', // Dia, Dia Semana
+  ...PAYMENT_COLS.map((_, i) => String.fromCharCode(67 + i)), // C, D, E, F, G, H
+  'I', // Total
+  'J', // Acumulado
+  'K', // F360
+  'L', // Dif
+  'M', // Total PIX
+  'N', // PIX F360
+  'O', // Dif PIX
+];
+
 function matchPayment(forma: string | null, key: string): boolean {
   if (!forma) return false;
   const upper = forma.toUpperCase();
@@ -59,7 +72,6 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
   const startStr = format(start, 'yyyy-MM-dd');
   const endStr = format(end, 'yyyy-MM-dd');
 
-  // Lancamentos for this month
   const { data: lancamentos } = useQuery({
     queryKey: ['fechamento-lancamentos', empresaId, mes],
     queryFn: async () => {
@@ -75,7 +87,6 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
     enabled: !!empresaId,
   });
 
-  // F360 manual values
   const { data: f360Data } = useQuery({
     queryKey: ['fechamento-f360', empresaId, mes],
     queryFn: async () => {
@@ -93,7 +104,6 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
 
   const upsertF360 = useMutation({
     mutationFn: async (params: { data: string; field: 'valor_f360' | 'valor_pix_f360'; value: number }) => {
-      // Get existing row to preserve the other field value
       const existing = f360Map[params.data];
       const payload = {
         empresa_id: empresaId,
@@ -119,7 +129,6 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
     return map;
   }, [f360Data]);
 
-  // Aggregate lancamentos by day and payment
   const dailyData = useMemo(() => {
     const map: Record<string, Record<string, number>> = {};
     const inicioFimMap: Record<string, { minInicio: string | null; maxFim: string | null }> = {};
@@ -136,7 +145,6 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
           map[d][col.key] = (map[d][col.key] || 0) + (l.valor || 0);
         }
       }
-      // Track inicio/fim
       if (l.data_inicio) {
         if (!inicioFimMap[d].minInicio || l.data_inicio < inicioFimMap[d].minInicio!)
           inicioFimMap[d].minInicio = l.data_inicio;
@@ -149,34 +157,41 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
     return { map, inicioFimMap };
   }, [lancamentos]);
 
-  // Totals
-  const totals = useMemo(() => {
-    const t: Record<string, number> = {};
+  // Compute daily totals and accumulator
+  const { dayTotals, dayAccumulated, totals } = useMemo(() => {
+    const byPayment: Record<string, number> = {};
     let totalAll = 0, totalPix = 0, totalF360 = 0, totalPixF360 = 0;
+    const dayTotalsMap: Record<string, { total: number; pix: number }> = {};
+    const dayAccMap: Record<string, number> = {};
+    let runningAcc = 0;
+
     for (const day of days) {
       const ds = format(day, 'yyyy-MM-dd');
       let dayTotal = 0;
       let dayPix = 0;
       for (const col of PAYMENT_COLS) {
         const v = dailyData.map[ds]?.[col.key] || 0;
-        t[col.key] = (t[col.key] || 0) + v;
+        byPayment[col.key] = (byPayment[col.key] || 0) + v;
         dayTotal += v;
-        if (PIX_KEYS.some(pk => col.key.includes(pk.replace('PIX ', '')))) {
-          // Check if this is a PIX column
-        }
-        if (col.key === 'PIX INTER' || col.key === 'PIX SICRED') {
-          dayPix += v;
-        }
+        if (col.key === 'PIX INTER' || col.key === 'PIX SICRED') dayPix += v;
       }
+      runningAcc += dayTotal;
+      dayTotalsMap[ds] = { total: dayTotal, pix: dayPix };
+      dayAccMap[ds] = runningAcc;
       totalAll += dayTotal;
       totalPix += dayPix;
       totalF360 += f360Map[ds]?.valor_f360 || 0;
       totalPixF360 += f360Map[ds]?.valor_pix_f360 || 0;
     }
-    return { byPayment: t, totalAll, totalPix, totalF360, totalPixF360 };
+    return {
+      dayTotals: dayTotalsMap,
+      dayAccumulated: dayAccMap,
+      totals: { byPayment, totalAll, totalPix, totalF360, totalPixF360 },
+    };
   }, [days, dailyData, f360Map]);
 
-  const handleExportCSV = useCallback(() => {
+  const handleExportExcel = useCallback(() => {
+    let runningAcc = 0;
     const rows = days.map(day => {
       const ds = format(day, 'yyyy-MM-dd');
       const dayNum = format(day, 'dd');
@@ -190,12 +205,14 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
         total += v;
         if (col.key === 'PIX INTER' || col.key === 'PIX SICRED') totalPix += v;
       }
+      runningAcc += total;
       const f = f360Map[ds];
       return {
         Dia: dayNum,
         'Dia Semana': dayName,
         ...paymentValues,
         Total: total,
+        Acumulado: runningAcc,
         F360: f?.valor_f360 || 0,
         'Dif': total - (f?.valor_f360 || 0),
         'Total PIX': totalPix,
@@ -203,21 +220,30 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
         'Dif PIX': totalPix - (f?.valor_pix_f360 || 0),
       };
     });
-    exportToCSV(rows, `fechamento-caixa-${mes}.csv`);
+    exportToCSV(rows, `fechamento-caixa-${mes}.xls`);
   }, [days, dailyData, f360Map, mes]);
 
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
         <CardTitle className="text-base font-semibold">Auditoria do Fechamento de Caixa — {format(start, 'MMMM yyyy', { locale: ptBR })}</CardTitle>
-        <Button size="sm" variant="outline" onClick={handleExportCSV} className="gap-1">
-          <Download className="h-4 w-4" /> CSV
+        <Button size="sm" variant="outline" onClick={handleExportExcel} className="gap-1">
+          <Download className="h-4 w-4" /> Excel
         </Button>
       </CardHeader>
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
+              {/* Reference letters row */}
+              <TableRow className="border-b-0">
+                {ALL_COL_LABELS.map(letter => (
+                  <TableHead key={letter} className="text-[10px] text-center text-muted-foreground/60 font-mono py-0 h-5">
+                    {letter}
+                  </TableHead>
+                ))}
+              </TableRow>
+              {/* Column names row */}
               <TableRow className="bg-muted/50">
                 <TableHead className="text-xs font-semibold whitespace-nowrap">Dia</TableHead>
                 <TableHead className="text-xs font-semibold whitespace-nowrap">Dia Semana</TableHead>
@@ -225,6 +251,7 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
                   <TableHead key={c.key} className="text-xs font-semibold whitespace-nowrap text-right">{c.label}</TableHead>
                 ))}
                 <TableHead className="text-xs font-semibold whitespace-nowrap text-right bg-muted">Total</TableHead>
+                <TableHead className="text-xs font-semibold whitespace-nowrap text-right bg-blue-50 dark:bg-blue-900/20">Acumulado</TableHead>
                 <TableHead className="text-xs font-semibold whitespace-nowrap text-right bg-yellow-50 dark:bg-yellow-900/20">F360</TableHead>
                 <TableHead className="text-xs font-semibold whitespace-nowrap text-right">Dif</TableHead>
                 <TableHead className="text-xs font-semibold whitespace-nowrap text-right bg-muted">Total PIX</TableHead>
@@ -238,14 +265,12 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
                 const dayNum = format(day, 'dd');
                 const dayName = DAY_NAMES[getDay(day)];
                 const isSunday = getDay(day) === 0;
-                let dayTotal = 0;
-                let dayPix = 0;
-                const cells = PAYMENT_COLS.map(col => {
-                  const v = dailyData.map[ds]?.[col.key] || 0;
-                  dayTotal += v;
-                  if (col.key === 'PIX INTER' || col.key === 'PIX SICRED') dayPix += v;
-                  return v;
-                });
+                const dt = dayTotals[ds] || { total: 0, pix: 0 };
+                const dayTotal = dt.total;
+                const dayPix = dt.pix;
+                const acc = dayAccumulated[ds] || 0;
+
+                const cells = PAYMENT_COLS.map(col => dailyData.map[ds]?.[col.key] || 0);
                 const f = f360Map[ds];
                 const f360Val = f?.valor_f360 || 0;
                 const pixF360Val = f?.valor_pix_f360 || 0;
@@ -262,6 +287,7 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
                       </TableCell>
                     ))}
                     <TableCell className="text-right text-xs tabular-nums font-semibold bg-muted/30">{dayTotal > 0 ? fmtCur(dayTotal) : '-'}</TableCell>
+                    <TableCell className="text-right text-xs tabular-nums font-semibold bg-blue-50/50 dark:bg-blue-900/10">{acc > 0 ? fmtCur(acc) : '-'}</TableCell>
                     <EditableCell
                       value={f360Val}
                       onSave={(val) => upsertF360.mutate({ data: ds, field: 'valor_f360', value: val })}
@@ -291,6 +317,7 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
                   </TableCell>
                 ))}
                 <TableCell className="text-right text-xs tabular-nums bg-muted/30">{fmtCur(totals.totalAll)}</TableCell>
+                <TableCell className="text-right text-xs tabular-nums bg-blue-50/50 dark:bg-blue-900/10">{fmtCur(totals.totalAll)}</TableCell>
                 <TableCell className="text-right text-xs tabular-nums bg-yellow-50 dark:bg-yellow-900/20">{fmtCur(totals.totalF360)}</TableCell>
                 <TableCell className={`text-right text-xs tabular-nums ${totals.totalAll - totals.totalF360 > 0 ? 'text-green-600' : totals.totalAll - totals.totalF360 < 0 ? 'text-red-600' : 'text-foreground'}`}>
                   {fmtCur(totals.totalAll - totals.totalF360)}
@@ -309,7 +336,6 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
   );
 }
 
-// Inline editable cell for f360 values
 function EditableCell({ value, onSave }: { value: number; onSave: (v: number) => void }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState('');
