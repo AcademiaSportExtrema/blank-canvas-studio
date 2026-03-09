@@ -28,9 +28,10 @@ function formatInputBRL(v: number | string): string {
 interface Props {
   empresaId: string;
   ano: number;
+  realizadoPorMes?: number[];
 }
 
-export function MetaAnualTable({ empresaId, ano }: Props) {
+export function MetaAnualTable({ empresaId, ano, realizadoPorMes: realizadoProp }: Props) {
   const queryClient = useQueryClient();
   const [metaTotal, setMetaTotal] = useState('0');
   const [pesos, setPesos] = useState<number[]>(Array(12).fill(0));
@@ -68,7 +69,7 @@ export function MetaAnualTable({ empresaId, ano }: Props) {
     enabled: !!metaAnual?.id,
   });
 
-  // Fetch realized values via RPC (server-side aggregation, no row limit)
+  // Fallback to RPC if prop not provided
   const { data: realizadoRpc } = useQuery({
     queryKey: ['meta-anual-realizado', empresaId, ano],
     queryFn: async () => {
@@ -79,18 +80,19 @@ export function MetaAnualTable({ empresaId, ano }: Props) {
       if (error) throw error;
       return (data || []) as { mes: number; total: number }[];
     },
-    enabled: !!empresaId,
+    enabled: !!empresaId && !realizadoProp,
   });
 
-  // Map RPC result to array indexed 0-11
+  // Use prop if available, otherwise fallback to RPC
   const realizadoPorMes = useMemo(() => {
+    if (realizadoProp) return realizadoProp;
     const arr = Array(12).fill(0);
     if (!realizadoRpc) return arr;
     for (const r of realizadoRpc) {
       if (r.mes >= 1 && r.mes <= 12) arr[r.mes - 1] = Number(r.total) || 0;
     }
     return arr;
-  }, [realizadoRpc]);
+  }, [realizadoProp, realizadoRpc]);
 
   // Sync state from DB
   useEffect(() => {
