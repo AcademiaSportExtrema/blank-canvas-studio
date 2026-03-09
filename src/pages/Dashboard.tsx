@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRealizadoMensal } from '@/hooks/useRealizadoMensal';
 import { useSalesMetrics } from '@/hooks/useSalesMetrics';
 import { useDashboardVisibilidade } from '@/hooks/useDashboardVisibilidade';
 import { RevenueTrendChart } from '@/components/dashboard/RevenueTrendChart';
