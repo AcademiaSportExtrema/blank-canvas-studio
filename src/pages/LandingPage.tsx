@@ -271,8 +271,7 @@ const LandingPage = () => {
             </Button>
             <Button
               size="lg"
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/5 text-base px-8"
+              className="bg-white text-gray-900 hover:bg-white/90 text-base px-8"
               asChild
             >
               <a href="#recursos">Ver recursos</a>
