@@ -45,15 +45,15 @@ const COLORS = {
 const FEATURES_MAIN = [
   {
     icon: BarChart3,
-    title: "Dashboard inteligente",
+    title: "Pare de adivinhar se vai bater a meta",
     description:
-      "Visualize receita, ticket médio, ranking e tendências em tempo real. Gráficos interativos que transformam dados em decisões.",
+      "Veja o progresso do time em tempo real e aja antes de perder a semana. Sem esperar o fechamento do mês.",
   },
   {
     icon: Brain,
-    title: "IA Coach personalizado",
+    title: "Cada consultora melhora sozinha",
     description:
-      "Inteligência artificial que analisa o desempenho e gera dicas diárias para cada consultora alcançar suas metas.",
+      "Dicas personalizadas baseadas no histórico de cada uma. O time se motiva sozinho — você só acompanha os resultados.",
   },
 ];
 
