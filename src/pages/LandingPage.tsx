@@ -178,7 +178,6 @@ const NAV_LINKS = [
 /* ─── Components ─── */
 
 const LandingPage = () => {
-  const [annual, setAnnual] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
 
   return (
