@@ -238,7 +238,7 @@ const LandingPage = () => {
         <div className="relative mx-auto max-w-4xl text-center">
           <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full ${COLORS.bgCard} ${COLORS.border} border text-xs ${COLORS.textSecondary} mb-8`}>
             <Sparkles className="h-3.5 w-3.5 text-[hsl(174,72%,56%)]" />
-            Plataforma #1 de gestão de metas comerciais
+            Gestão de metas comerciais simplificada
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
