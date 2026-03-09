@@ -99,22 +99,34 @@ const FEATURES_GRID = [
   },
 ];
 
+const FEATURES_LIST = [
+  "Dashboard completo em tempo real",
+  "Upload e importação de planilhas",
+  "Metas, comissões e ranking",
+  "IA Coach personalizado",
+  "Análise automática por IA",
+  "Gestão de devedores",
+  "Relatórios avançados",
+  "Multi-empresa (SaaS)",
+  "Suporte prioritário",
+];
+
 const PLANS = [
   {
-    name: "MetasHub Pro",
-    price: { monthly: 297, annual: 252 },
-    description: "Plano completo para sua operação comercial",
-    features: [
-      "Dashboard completo em tempo real",
-      "Upload e importação de planilhas",
-      "Metas, comissões e ranking",
-      "IA Coach personalizado",
-      "Análise automática por IA",
-      "Gestão de devedores",
-      "Relatórios avançados",
-      "Multi-empresa (SaaS)",
-      "Suporte prioritário",
-    ],
+    name: "Mensal",
+    priceLabel: "R$ 297",
+    priceSuffix: "/mês",
+    subtitle: "Cobrança mensal, cancele quando quiser",
+    features: FEATURES_LIST,
+    highlighted: false,
+  },
+  {
+    name: "Anual",
+    priceLabel: "R$ 3.024",
+    priceSuffix: "/ano à vista",
+    subtitle: "Equivale a R$ 252/mês — economia de 15%",
+    badge: "-15%",
+    features: FEATURES_LIST,
     highlighted: true,
   },
 ];
