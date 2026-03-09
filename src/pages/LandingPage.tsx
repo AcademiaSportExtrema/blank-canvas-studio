@@ -472,7 +472,7 @@ const LandingPage = () => {
               asChild
             >
               <Link to="/cadastro">
-                Começar agora
+                Teste grátis — 30 dias
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
