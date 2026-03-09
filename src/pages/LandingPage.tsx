@@ -360,7 +360,7 @@ const LandingPage = () => {
             Planos que cabem no seu bolso
           </h2>
           <p className={`text-center ${COLORS.textSecondary} mb-8 max-w-xl mx-auto`}>
-            Comece grátis por 14 dias. Sem cartão de crédito.
+            Teste grátis por 30 dias. Sem cartão de crédito.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
