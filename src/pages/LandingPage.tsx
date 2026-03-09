@@ -154,7 +154,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Posso testar antes de assinar?",
-    a: "Sim! Oferecemos 14 dias de teste grátis com acesso completo a todas as funcionalidades do plano Pro.",
+    a: "Sim! Oferecemos 30 dias de teste grátis com acesso completo a todas as funcionalidades do plano Pro.",
   },
   {
     q: "Meus dados estão seguros?",
