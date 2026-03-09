@@ -464,7 +464,7 @@ const LandingPage = () => {
               Pronto para bater todas as metas?
             </h2>
             <p className={`${COLORS.textSecondary} mb-8 max-w-lg mx-auto`}>
-              Comece grátis por 14 dias. Sem cartão de crédito, sem compromisso.
+              Teste grátis por 30 dias. Sem cartão de crédito, sem compromisso.
             </p>
             <Button
               size="lg"
