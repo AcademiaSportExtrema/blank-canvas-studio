@@ -125,13 +125,13 @@ const PLANS = [
 const TESTIMONIALS = [
   {
     quote:
-      "O MetasHub transformou a forma como acompanhamos nossas metas. Antes era tudo em planilha, agora temos visibilidade total em tempo real.",
+      "Antes eu só sabia se tinha batido a meta no dia 5 do mês seguinte. Agora acompanho em tempo real e consigo agir na hora certa. Resultado: 3 meses seguidos acima da meta.",
     author: "Carla Mendes",
     role: "Gerente Comercial — Beleza Pura",
   },
   {
     quote:
-      "A funcionalidade de IA Coach motivou nossas consultoras de um jeito que nunca imaginei. O time bateu a meta por 3 meses consecutivos.",
+      "O ranking mudou o clima do time. As consultoras começaram a se cobrar sozinhas. Em 60 dias, a equipe aumentou o faturamento em 22%.",
     author: "Ricardo Alves",
     role: "Diretor — Rede FitClub",
   },
