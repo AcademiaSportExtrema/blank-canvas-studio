@@ -23,6 +23,11 @@ export default function Login() {
     if (!authLoading && user && role) {
       navigate(role === 'consultora' ? '/minha-performance' : '/dashboard', { replace: true });
     }
+    // User authenticated but no role found — sign out and show error
+    if (!authLoading && user && !role) {
+      setError('Sua conta não possui permissões configuradas. Contate o administrador.');
+      signOut();
+    }
   }, [authLoading, user, role, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
