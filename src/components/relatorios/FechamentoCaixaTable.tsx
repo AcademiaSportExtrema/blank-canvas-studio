@@ -307,7 +307,7 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
                       onSave={(val) => upsertF360.mutate({ data: ds, field: 'valor_f360', value: val })}
                     />
                     <TableCell className={`text-right text-xs tabular-nums font-medium ${difColor(dif)}`}>
-                      {dayTotal > 0 || f360Val > 0 ? fmtCur(dif) : '-'}
+                      {dayTotal > 0 || f360Val > 0 ? fmtDif(dif) : '-'}
                     </TableCell>
                     <TableCell className="text-right text-xs tabular-nums font-semibold bg-muted/30">{dayPix > 0 ? fmtCur(dayPix) : '-'}</TableCell>
                     <EditableCell
