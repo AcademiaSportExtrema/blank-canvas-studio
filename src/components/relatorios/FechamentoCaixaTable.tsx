@@ -331,7 +331,7 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
                 </TableCell>
                 <TableCell className="text-right text-xs tabular-nums bg-muted/30">{fmtCur(totals.totalPix)}</TableCell>
                 <TableCell className="text-right text-xs tabular-nums bg-yellow-50 dark:bg-yellow-900/20">{fmtCur(totals.totalPixF360)}</TableCell>
-                <TableCell className={`text-right text-xs tabular-nums ${totals.totalPix - totals.totalPixF360 > 0 ? 'text-green-600' : totals.totalPix - totals.totalPixF360 < 0 ? 'text-red-600' : 'text-foreground'}`}>
+                <TableCell className={`text-right text-xs tabular-nums ${difColor(totals.totalPix - totals.totalPixF360)}`}>
                   {fmtCur(totals.totalPix - totals.totalPixF360)}
                 </TableCell>
               </TableRow>
