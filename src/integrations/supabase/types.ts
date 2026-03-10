@@ -1378,6 +1378,21 @@ export type Database = {
         Returns: boolean
       }
       is_empresa_active: { Args: { _empresa_id: string }; Returns: boolean }
+      search_lancamentos_for_ajuste: {
+        Args: { _limit?: number; _search?: string }
+        Returns: {
+          data_lancamento: string
+          empresa: string
+          id: string
+          nome_cliente: string
+          numero_contrato: string
+          plano: string
+          produto: string
+          resp_recebimento: string
+          resp_venda: string
+          valor: number
+        }[]
+      }
     }
     Enums: {
       ajuste_status: "pendente" | "aprovado" | "rejeitado"
