@@ -45,13 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 1) onAuthStateChange only syncs session/user — no awaits, no DB calls
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
 
-        if (event === 'SIGNED_IN') {
-          setIsLoading(true);
-        } else if (!session?.user) {
+        if (!session?.user) {
           resetProfile();
           setIsLoading(false);
         }
