@@ -1,35 +1,18 @@
 
+## Correção aplicada: Unificação das somatórias Dashboard ↔ Relatórios
 
-## Problema: Loading infinito causado pelo fix anterior
+### Problema
+O Dashboard usava a RPC `get_realizado_por_mes` (soma simples por `data_inicio`) enquanto Relatórios usava lógica complexa da Tabela 2 (filtros de duração, agregadores, Entuspass). Isso causava divergências nos valores de "Realizado".
 
-### Causa raiz
+### Solução implementada
+1. **Novo hook `useRealizadoMensal`** — centraliza a lógica da Tabela 2:
+   - Lançamentos `entra_meta=true` com filtro de meses cruzados
+   - Recorrentes contabilizados por `data_lancamento`
+   - Entuspass/Sport Pass (`entra_meta=false`)
+   - Pagamentos agregadores (Wellhub, Total Pass)
 
-A correção anterior adicionou `setIsLoading(true)` no `onAuthStateChange` para QUALQUER sessão. O problema:
+2. **Dashboard** — substituiu a query RPC por `useRealizadoMensal`
+3. **Relatórios** — substituiu cálculo inline por `useRealizadoMensal`
 
-1. `getSession` resolve → seta user → user.id effect roda → busca perfil → `isLoading = false`
-2. `onAuthStateChange` dispara evento `INITIAL_SESSION` → seta `isLoading(true)` novamente
-3. O effect de user.id NÃO re-executa (mesmo ID) → `isLoading` fica `true` para sempre
-
-### Correção
-
-**`src/hooks/useAuth.tsx`** -- No callback do `onAuthStateChange`, verificar o tipo do evento. Só setar `isLoading(true)` para eventos `SIGNED_IN` e `TOKEN_REFRESHED`, NÃO para `INITIAL_SESSION` (que já é tratado pelo bootstrap via `getSession`):
-
-```ts
-supabase.auth.onAuthStateChange((event, session) => {
-  setSession(session);
-  setUser(session?.user ?? null);
-
-  if (event === 'SIGNED_IN') {
-    setIsLoading(true);
-  } else if (!session?.user) {
-    resetProfile();
-    setIsLoading(false);
-  }
-});
-```
-
-Isso mantém a proteção contra race condition no login (evento `SIGNED_IN`) sem quebrar o carregamento inicial (`INITIAL_SESSION`).
-
-### Arquivo alterado
-- **`src/hooks/useAuth.tsx`** -- Filtrar evento no onAuthStateChange para evitar re-setar isLoading no INITIAL_SESSION
-
+### Resultado
+Todos os valores de "Realizado" agora usam a mesma lógica de cálculo.
