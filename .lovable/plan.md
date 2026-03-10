@@ -1,20 +1,18 @@
 
-
-## Restringir ajustes ao mês corrente
+## Correção aplicada: Unificação das somatórias Dashboard ↔ Relatórios
 
 ### Problema
-A função `search_lancamentos_for_ajuste` retorna lançamentos de qualquer mês. A consultora deveria ver apenas lançamentos do mês corrente.
+O Dashboard usava a RPC `get_realizado_por_mes` (soma simples por `data_inicio`) enquanto Relatórios usava lógica complexa da Tabela 2 (filtros de duração, agregadores, Entuspass). Isso causava divergências nos valores de "Realizado".
 
-### Solução
+### Solução implementada
+1. **Novo hook `useRealizadoMensal`** — centraliza a lógica da Tabela 2:
+   - Lançamentos `entra_meta=true` com filtro de meses cruzados
+   - Recorrentes contabilizados por `data_lancamento`
+   - Entuspass/Sport Pass (`entra_meta=false`)
+   - Pagamentos agregadores (Wellhub, Total Pass)
 
-**Alterar a função SQL `search_lancamentos_for_ajuste`** para adicionar um filtro por `mes_competencia` igual ao mês atual (formato `YYYY-MM`):
+2. **Dashboard** — substituiu a query RPC por `useRealizadoMensal`
+3. **Relatórios** — substituiu cálculo inline por `useRealizadoMensal`
 
-```sql
-AND l.mes_competencia = to_char(now(), 'YYYY-MM')
-```
-
-Isso garante que apenas lançamentos do mês corrente apareçam nos resultados de busca para solicitação de ajuste. Nenhuma alteração no frontend é necessária.
-
-### Arquivo alterado
-- **Nova migration SQL** — Recriar a função com filtro de mês corrente
-
+### Resultado
+Todos os valores de "Realizado" agora usam a mesma lógica de cálculo.
