@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
+import { useState, useEffect, useRef, createContext, useContext, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import type { AppRole } from '@/types/database';
@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [empresaLogoUrl, setEmpresaLogoUrl] = useState<string | null>(null);
   const [empresaAtiva, setEmpresaAtiva] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const prevUserIdRef = useRef<string | null>(null);
 
   const resetProfile = useCallback(() => {
     setRole(null);
@@ -45,13 +46,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 1) onAuthStateChange only syncs session/user — no awaits, no DB calls
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
+        const newUserId = session?.user?.id ?? null;
+        
         setSession(session);
         setUser(session?.user ?? null);
 
-        if (event === 'SIGNED_IN') {
+        if (newUserId && newUserId !== prevUserIdRef.current) {
+          // New user login — mark loading so Login.tsx waits for profile fetch
           setIsLoading(true);
-        } else if (!session?.user) {
+        }
+        
+        prevUserIdRef.current = newUserId;
+
+        if (!session?.user) {
           resetProfile();
           setIsLoading(false);
         }
