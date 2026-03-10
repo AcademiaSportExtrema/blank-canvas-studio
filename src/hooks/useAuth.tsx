@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [empresaLogoUrl, setEmpresaLogoUrl] = useState<string | null>(null);
   const [empresaAtiva, setEmpresaAtiva] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const prevUserIdRef = useRef<string | null>(null);
 
   const resetProfile = useCallback(() => {
     setRole(null);
@@ -46,8 +47,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        const newUserId = session?.user?.id ?? null;
+        
         setSession(session);
         setUser(session?.user ?? null);
+
+        if (newUserId && newUserId !== prevUserIdRef.current) {
+          // New user login — mark loading so Login.tsx waits for profile fetch
+          setIsLoading(true);
+        }
+        
+        prevUserIdRef.current = newUserId;
 
         if (!session?.user) {
           resetProfile();
