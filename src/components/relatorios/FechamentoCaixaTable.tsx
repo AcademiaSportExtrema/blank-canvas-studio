@@ -49,6 +49,13 @@ function fmtCur(v: number) {
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function difColor(v: number) {
+  const rounded = Math.round(v * 100) / 100;
+  if (rounded > 0) return 'text-green-600';
+  if (rounded < 0) return 'text-red-600';
+  return 'text-foreground';
+}
+
 const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 interface Props {
@@ -292,7 +299,7 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
                       value={f360Val}
                       onSave={(val) => upsertF360.mutate({ data: ds, field: 'valor_f360', value: val })}
                     />
-                    <TableCell className={`text-right text-xs tabular-nums font-medium ${dif > 0 ? 'text-green-600' : dif < 0 ? 'text-red-600' : 'text-foreground'}`}>
+                    <TableCell className={`text-right text-xs tabular-nums font-medium ${difColor(dif)}`}>
                       {dayTotal > 0 || f360Val > 0 ? fmtCur(dif) : '-'}
                     </TableCell>
                     <TableCell className="text-right text-xs tabular-nums font-semibold bg-muted/30">{dayPix > 0 ? fmtCur(dayPix) : '-'}</TableCell>
@@ -300,7 +307,7 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
                       value={pixF360Val}
                       onSave={(val) => upsertF360.mutate({ data: ds, field: 'valor_pix_f360', value: val })}
                     />
-                    <TableCell className={`text-right text-xs tabular-nums font-medium ${difPix > 0 ? 'text-green-600' : difPix < 0 ? 'text-red-600' : 'text-foreground'}`}>
+                    <TableCell className={`text-right text-xs tabular-nums font-medium ${difColor(difPix)}`}>
                       {dayPix > 0 || pixF360Val > 0 ? fmtCur(difPix) : '-'}
                     </TableCell>
                   </TableRow>
@@ -319,12 +326,12 @@ export function FechamentoCaixaTable({ empresaId, mes }: Props) {
                 <TableCell className="text-right text-xs tabular-nums bg-muted/30">{fmtCur(totals.totalAll)}</TableCell>
                 <TableCell className="text-right text-xs tabular-nums bg-blue-50/50 dark:bg-blue-900/10">{fmtCur(totals.totalAll)}</TableCell>
                 <TableCell className="text-right text-xs tabular-nums bg-yellow-50 dark:bg-yellow-900/20">{fmtCur(totals.totalF360)}</TableCell>
-                <TableCell className={`text-right text-xs tabular-nums ${totals.totalAll - totals.totalF360 > 0 ? 'text-green-600' : totals.totalAll - totals.totalF360 < 0 ? 'text-red-600' : 'text-foreground'}`}>
+                <TableCell className={`text-right text-xs tabular-nums ${difColor(totals.totalAll - totals.totalF360)}`}>
                   {fmtCur(totals.totalAll - totals.totalF360)}
                 </TableCell>
                 <TableCell className="text-right text-xs tabular-nums bg-muted/30">{fmtCur(totals.totalPix)}</TableCell>
                 <TableCell className="text-right text-xs tabular-nums bg-yellow-50 dark:bg-yellow-900/20">{fmtCur(totals.totalPixF360)}</TableCell>
-                <TableCell className={`text-right text-xs tabular-nums ${totals.totalPix - totals.totalPixF360 > 0 ? 'text-green-600' : totals.totalPix - totals.totalPixF360 < 0 ? 'text-red-600' : 'text-foreground'}`}>
+                <TableCell className={`text-right text-xs tabular-nums ${difColor(totals.totalPix - totals.totalPixF360)}`}>
                   {fmtCur(totals.totalPix - totals.totalPixF360)}
                 </TableCell>
               </TableRow>
