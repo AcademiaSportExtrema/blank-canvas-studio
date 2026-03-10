@@ -49,6 +49,13 @@ function fmtCur(v: number) {
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function difColor(v: number) {
+  const rounded = Math.round(v * 100) / 100;
+  if (rounded > 0) return 'text-green-600';
+  if (rounded < 0) return 'text-red-600';
+  return 'text-foreground';
+}
+
 const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 interface Props {
