@@ -49,6 +49,13 @@ function fmtCur(v: number) {
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function fmtDif(v: number) {
+  const rounded = Math.round(v * 100) / 100;
+  // Negative: keep sign (red). Zero/positive: show absolute value (no minus sign).
+  if (rounded < 0) return fmtCur(rounded);
+  return fmtCur(Math.abs(rounded));
+}
+
 function difColor(v: number) {
   const rounded = Math.round(v * 100) / 100;
   if (rounded > 0) return 'text-green-600';
