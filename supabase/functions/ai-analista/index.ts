@@ -302,6 +302,7 @@ Limite sua resposta a no máximo 500 palavras.`;
           // Save analysis to DB using service role (bypass RLS)
           if (fullContent) {
             const { error: saveError } = await supabaseAdmin.from("analise_ia").upsert(
+              {
                 empresa_id: empresaId,
                 mes_referencia: mesAtual,
                 conteudo: fullContent,
