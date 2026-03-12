@@ -1,10 +1,11 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building, Users, DollarSign, Plug } from 'lucide-react';
+import { Building, Users, DollarSign, Plug, BrainCircuit } from 'lucide-react';
 import EmpresasContent from '@/components/super-admin/EmpresasContent';
 import UsuariosContent from '@/components/super-admin/UsuariosContent';
 import FinanceiroContent from '@/components/super-admin/FinanceiroContent';
 import { IntegracoesTab } from '@/components/configuracao/IntegracoesTab';
+import UsoIaContent from '@/components/super-admin/UsoIaContent';
 
 export default function SaasAdmin() {
   return (
@@ -23,6 +24,10 @@ export default function SaasAdmin() {
             <DollarSign className="h-4 w-4" />
             Financeiro
           </TabsTrigger>
+          <TabsTrigger value="uso-ia" className="gap-2">
+            <BrainCircuit className="h-4 w-4" />
+            Uso IA
+          </TabsTrigger>
           <TabsTrigger value="integracoes" className="gap-2">
             <Plug className="h-4 w-4" />
             Integrações
@@ -39,6 +44,10 @@ export default function SaasAdmin() {
 
         <TabsContent value="financeiro">
           <FinanceiroContent />
+        </TabsContent>
+
+        <TabsContent value="uso-ia">
+          <UsoIaContent />
         </TabsContent>
 
         <TabsContent value="integracoes">
