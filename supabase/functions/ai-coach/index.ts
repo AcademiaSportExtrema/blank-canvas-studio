@@ -217,7 +217,59 @@ ${produtoBreakdown || "Nenhuma venda registrada"}${politicaComercial}`;
       });
     }
 
-    return new Response(aiResponse.body, {
+    // Intercept stream to log usage
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAdmin = createClient(supabaseUrl, serviceKey);
+    const reader = aiResponse.body!.getReader();
+    const decoder = new TextDecoder();
+    let fullContent = "";
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        let textBuffer = "";
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            controller.enqueue(value);
+            textBuffer += decoder.decode(value, { stream: true });
+            let idx: number;
+            while ((idx = textBuffer.indexOf("\n")) !== -1) {
+              let line = textBuffer.slice(0, idx);
+              textBuffer = textBuffer.slice(idx + 1);
+              if (line.endsWith("\r")) line = line.slice(0, -1);
+              if (!line.startsWith("data: ")) continue;
+              const jsonStr = line.slice(6).trim();
+              if (jsonStr === "[DONE]") continue;
+              try {
+                const parsed = JSON.parse(jsonStr);
+                const c = parsed.choices?.[0]?.delta?.content;
+                if (c) fullContent += c;
+              } catch { /* partial */ }
+            }
+          }
+          // Log usage
+          if (fullContent) {
+            const tokensEstimados = Math.ceil(fullContent.length / 4);
+            await supabaseAdmin.from("ai_usage_logs").insert({
+              empresa_id: userRole.empresa_id,
+              funcao: "ai-coach",
+              user_id: user.id,
+              tokens_estimados: tokensEstimados,
+              modelo: "google/gemini-3-flash-preview",
+            }).then(({ error }) => {
+              if (error) console.error("Failed to log AI usage:", error);
+            });
+          }
+          controller.close();
+        } catch (e) {
+          console.error("Stream error:", e);
+          controller.error(e);
+        }
+      },
+    });
+
+    return new Response(stream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (e) {
