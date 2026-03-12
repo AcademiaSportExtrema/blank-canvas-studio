@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
     const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
     // Load Resend API key from environment secrets (never from DB)
-    const resendApiKey = Deno.env.get("RESEND_API_KEY") || "";
+    const resendApiKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("resend") || "";
 
     // Load display settings (domain/name) from system_settings — these are not secrets
     let fromDomain = "metashub.com.br";
