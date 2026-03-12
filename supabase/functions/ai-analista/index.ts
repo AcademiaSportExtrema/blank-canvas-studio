@@ -301,11 +301,16 @@ Limite sua resposta a no máximo 500 palavras.`;
             if (saveError) {
               console.error("Failed to save analysis:", saveError);
             } else if (triggerEmail) {
-              await triggerAnaliseEmailDispatch({
-                supabaseUrl,
-                serviceKey,
-                empresaId,
-              });
+              console.log(`[ai-analista] Triggering email dispatch for empresa=${empresaId}`);
+              try {
+                await triggerAnaliseEmailDispatch({
+                  supabaseUrl,
+                  serviceKey,
+                  empresaId,
+                });
+              } catch (emailErr) {
+                console.error("[ai-analista] Email dispatch threw:", emailErr);
+              }
             }
           }
 
