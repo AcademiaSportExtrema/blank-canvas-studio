@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage_logs: {
+        Row: {
+          created_at: string
+          empresa_id: string
+          funcao: string
+          id: string
+          modelo: string | null
+          tokens_estimados: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          empresa_id: string
+          funcao: string
+          id?: string
+          modelo?: string | null
+          tokens_estimados?: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string
+          funcao?: string
+          id?: string
+          modelo?: string | null
+          tokens_estimados?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_logs_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analise_email_config: {
         Row: {
           ativo: boolean
