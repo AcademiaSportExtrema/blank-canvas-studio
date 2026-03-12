@@ -285,10 +285,23 @@ Limite sua resposta a no máximo 500 palavras.`;
             }
           }
 
+          // Log AI usage
+          if (fullContent) {
+            const tokensEstimados = Math.ceil(fullContent.length / 4);
+            await supabaseAdmin.from("ai_usage_logs").insert({
+              empresa_id: empresaId,
+              funcao: "ai-analista",
+              user_id: user.id,
+              tokens_estimados: tokensEstimados,
+              modelo: "google/gemini-3-flash-preview",
+            }).then(({ error: usageErr }) => {
+              if (usageErr) console.error("Failed to log AI usage:", usageErr);
+            });
+          }
+
           // Save analysis to DB using service role (bypass RLS)
           if (fullContent) {
             const { error: saveError } = await supabaseAdmin.from("analise_ia").upsert(
-              {
                 empresa_id: empresaId,
                 mes_referencia: mesAtual,
                 conteudo: fullContent,
