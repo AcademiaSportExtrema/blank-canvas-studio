@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ImpersonationProvider } from "@/hooks/useImpersonation";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
+import { InactivityWarningDialog } from "@/components/InactivityWarningDialog";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 
 // Pages
@@ -48,6 +49,7 @@ const App = () => (
         <AuthProvider>
           <ImpersonationProvider>
             <ImpersonationBanner />
+            <InactivityWarningDialog />
           <Routes>
             {/* Auth routes */}
             <Route path="/login" element={<Login />} />
