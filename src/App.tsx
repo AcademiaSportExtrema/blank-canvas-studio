@@ -49,6 +49,7 @@ const App = () => (
         <AuthProvider>
           <ImpersonationProvider>
             <ImpersonationBanner />
+            <InactivityWarningDialog />
           <Routes>
             {/* Auth routes */}
             <Route path="/login" element={<Login />} />
