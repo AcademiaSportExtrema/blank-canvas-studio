@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,29 +40,33 @@ async function triggerAnaliseEmailDispatch(params: {
   console.log("Automatic analysis email dispatched:", payload?.message || "ok");
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing authorization header");
+    if (!authHeader?.startsWith("Bearer ")) throw new Error("Missing authorization header");
 
+    const token = authHeader.replace("Bearer ", "");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey, {
+
+    // Use getClaims instead of getUser to avoid session expiry issues
+    const userClient = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
     });
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) throw new Error("Unauthorized");
+    const userId = claimsData.claims.sub;
+
     const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error("Unauthorized");
-
     // Verify admin role
-    const { data: userRole } = await supabase
+    const { data: userRole } = await supabaseAdmin
       .from("user_roles")
       .select("empresa_id, role")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .single();
 
     if (!userRole) throw new Error("No role found");
@@ -82,8 +86,8 @@ serve(async (req) => {
     const diaAtual = now.getDate();
     const diasRestantes = diasNoMes - diaAtual;
 
-    // Fetch meta mensal
-    const { data: metaMensal } = await supabase
+    // Fetch meta mensal using admin client to avoid RLS issues
+    const { data: metaMensal } = await supabaseAdmin
       .from("metas_mensais")
       .select("*")
       .eq("mes_referencia", mesAtual)
@@ -91,7 +95,7 @@ serve(async (req) => {
       .single();
 
     // Fetch consultoras ativas
-    const { data: consultoras } = await supabase
+    const { data: consultoras } = await supabaseAdmin
       .from("consultoras")
       .select("*")
       .eq("empresa_id", empresaId)
@@ -100,7 +104,7 @@ serve(async (req) => {
     // Fetch metas por consultora
     let metasConsultoras: any[] = [];
     if (metaMensal) {
-      const { data } = await supabase
+      const { data } = await supabaseAdmin
         .from("metas_consultoras")
         .select("*, consultoras(*)")
         .eq("meta_mensal_id", metaMensal.id);
@@ -108,9 +112,10 @@ serve(async (req) => {
     }
 
     // Fetch lancamentos do mês
-    const { data: lancamentos } = await supabase
+    const { data: lancamentos } = await supabaseAdmin
       .from("lancamentos")
       .select("*")
+      .eq("empresa_id", empresaId)
       .eq("entra_meta", true)
       .eq("mes_competencia", mesAtual);
 
@@ -122,7 +127,7 @@ serve(async (req) => {
     // Fetch commission levels
     let niveisComissao: any[] = [];
     if (metaMensal) {
-      const { data } = await supabase
+      const { data } = await supabaseAdmin
         .from("comissao_niveis")
         .select("*")
         .eq("meta_mensal_id", metaMensal.id)
@@ -203,7 +208,7 @@ Limite sua resposta a no máximo 500 palavras.`;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Non-streaming call to save the result
+    // Streaming call
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -240,7 +245,6 @@ Limite sua resposta a no máximo 500 palavras.`;
 
     // We stream to the client AND collect the full text to save
     const reader = aiResponse.body!.getReader();
-    const encoder = new TextEncoder();
     const decoder = new TextDecoder();
     let fullContent = "";
 
@@ -273,7 +277,7 @@ Limite sua resposta a no máximo 500 palavras.`;
           }
           // Flush remaining
           if (textBuffer.trim()) {
-            for (let raw of textBuffer.split("\n")) {
+            for (const raw of textBuffer.split("\n")) {
               if (!raw || !raw.startsWith("data: ")) continue;
               const jsonStr = raw.slice(6).trim();
               if (jsonStr === "[DONE]") continue;
@@ -291,7 +295,7 @@ Limite sua resposta a no máximo 500 palavras.`;
             await supabaseAdmin.from("ai_usage_logs").insert({
               empresa_id: empresaId,
               funcao: "ai-analista",
-              user_id: user.id,
+              user_id: userId,
               tokens_estimados: tokensEstimados,
               modelo: "google/gemini-3-flash-preview",
             }).then(({ error: usageErr }) => {
