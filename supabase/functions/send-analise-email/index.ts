@@ -108,16 +108,18 @@ Deno.serve(async (req) => {
 
     // If called with auth header, validate user is admin
     if (authHeader && !body._internal) {
-      const supabaseUser = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      const token = authHeader.replace("Bearer ", "");
+      const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: { user } } = await supabaseUser.auth.getUser();
-      if (!user) {
+      const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+      if (claimsError || !claimsData?.claims?.sub) {
         return new Response(JSON.stringify({ error: "Não autorizado" }), {
           status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const { data: role } = await supabaseAdmin.from("user_roles").select("empresa_id, role").eq("user_id", user.id).single();
+      const callerId = claimsData.claims.sub;
+      const { data: role } = await supabaseAdmin.from("user_roles").select("empresa_id, role").eq("user_id", callerId).single();
       if (!role || (role.role !== "admin" && role.role !== "super_admin")) {
         return new Response(JSON.stringify({ error: "Apenas admins podem enviar emails" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
