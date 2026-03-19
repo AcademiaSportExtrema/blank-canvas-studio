@@ -222,7 +222,7 @@ const LandingPage = () => {
                 <Link to="/login">Login</Link>
               </Button>
               <Button className={`${COLORS.accentBg} text-black font-semibold`} asChild>
-                <Link to="/cadastro">Teste grátis — 30 dias</Link>
+                <Link to="/cadastro">Solicitar cadastro</Link>
               </Button>
             </div>
           </div>
