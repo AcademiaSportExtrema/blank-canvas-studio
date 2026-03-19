@@ -147,8 +147,8 @@ const FAQ_ITEMS = [
     a: "Você exporta a planilha do seu ERP (formato XLS) e faz o upload diretamente na plataforma. O sistema aplica regras automáticas para classificar cada lançamento.",
   },
   {
-    q: "Posso testar antes de assinar?",
-    a: "Sim! Oferecemos 30 dias de teste grátis com acesso completo a todas as funcionalidades do plano Pro.",
+    q: "Como solicito o cadastro?",
+    a: "Basta clicar em 'Solicitar cadastro' e preencher o formulário. Nossa equipe entrará em contato para liberar seu acesso.",
   },
   {
     q: "Meus dados estão seguros?",
@@ -156,13 +156,12 @@ const FAQ_ITEMS = [
   },
   {
     q: "Posso gerenciar mais de uma loja?",
-    a: "Sim, no plano Enterprise você gerencia múltiplas unidades em uma única plataforma, com dados totalmente isolados entre elas.",
+    a: "Sim, você gerencia múltiplas unidades em uma única plataforma, com dados totalmente isolados entre elas.",
   },
 ];
 
 const NAV_LINKS = [
   { label: "Recursos", href: "#recursos" },
-  { label: "Preços", href: "#precos" },
   { label: "FAQ", href: "#faq" },
 ];
 
