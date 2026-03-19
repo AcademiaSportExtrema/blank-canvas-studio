@@ -1,35 +1,18 @@
 
+## Correção aplicada: Unificação das somatórias Dashboard ↔ Relatórios
 
-## Fix: Privilege Escalation on `user_roles`
+### Problema
+O Dashboard usava a RPC `get_realizado_por_mes` (soma simples por `data_inicio`) enquanto Relatórios usava lógica complexa da Tabela 2 (filtros de duração, agregadores, Entuspass). Isso causava divergências nos valores de "Realizado".
 
-### Problem
+### Solução implementada
+1. **Novo hook `useRealizadoMensal`** — centraliza a lógica da Tabela 2:
+   - Lançamentos `entra_meta=true` com filtro de meses cruzados
+   - Recorrentes contabilizados por `data_lancamento`
+   - Entuspass/Sport Pass (`entra_meta=false`)
+   - Pagamentos agregadores (Wellhub, Total Pass)
 
-The RLS policy "Admins manage own empresa roles" allows admins to INSERT/UPDATE rows with `role = 'super_admin'`, giving themselves full platform access.
+2. **Dashboard** — substituiu a query RPC por `useRealizadoMensal`
+3. **Relatórios** — substituiu cálculo inline por `useRealizadoMensal`
 
-### Fix
-
-Update the WITH CHECK condition to add `AND role != 'super_admin'::app_role`, preventing admins from assigning the super_admin role.
-
-### SQL Migration
-
-```sql
-DROP POLICY "Admins manage own empresa roles" ON public.user_roles;
-
-CREATE POLICY "Admins manage own empresa roles"
-ON public.user_roles
-FOR ALL
-TO public
-USING (
-  has_role(auth.uid(), 'admin'::app_role)
-  AND empresa_id = get_user_empresa_id(auth.uid())
-)
-WITH CHECK (
-  has_role(auth.uid(), 'admin'::app_role)
-  AND empresa_id = get_user_empresa_id(auth.uid())
-  AND role != 'super_admin'::app_role
-);
-```
-
-### Files
-- **New migration**: drops and recreates the policy with the restricted check
-
+### Resultado
+Todos os valores de "Realizado" agora usam a mesma lógica de cálculo.
