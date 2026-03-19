@@ -367,10 +367,10 @@ const LandingPage = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-[hsl(174,72%,56%,0.08)] to-transparent pointer-events-none" />
           <div className="relative">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Você está a 30 dias de ter uma equipe que bate meta sozinha
+              Pronto para ter uma equipe que bate meta sozinha?
             </h2>
             <p className={`${COLORS.textSecondary} mb-8 max-w-lg mx-auto`}>
-              Comece agora, sem cartão de crédito. Veja os resultados antes de pagar.
+              Solicite seu cadastro e comece a ver resultados.
             </p>
             <Button
               size="lg"
