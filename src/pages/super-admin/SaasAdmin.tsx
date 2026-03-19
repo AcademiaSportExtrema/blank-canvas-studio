@@ -29,6 +29,10 @@ export default function SaasAdmin() {
             <BrainCircuit className="h-4 w-4" />
             Uso IA
           </TabsTrigger>
+          <TabsTrigger value="leads" className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Leads
+          </TabsTrigger>
           <TabsTrigger value="integracoes" className="gap-2">
             <Plug className="h-4 w-4" />
             Integrações
