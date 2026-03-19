@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.validate-resend-key]
 verify_jwt = false
+
+[functions.submit-site-lead]
+verify_jwt = false

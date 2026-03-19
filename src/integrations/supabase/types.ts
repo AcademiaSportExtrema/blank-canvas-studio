@@ -1123,6 +1123,62 @@ export type Database = {
           },
         ]
       }
+      site_leads: {
+        Row: {
+          aprovado_por: string | null
+          como_conheceu: string | null
+          created_at: string
+          email: string
+          empresa_id: string | null
+          id: string
+          nome: string
+          nome_empresa: string
+          observacao_admin: string | null
+          qtd_consultoras: string | null
+          segmento: string | null
+          status: Database["public"]["Enums"]["lead_status"]
+          telefone: string | null
+        }
+        Insert: {
+          aprovado_por?: string | null
+          como_conheceu?: string | null
+          created_at?: string
+          email: string
+          empresa_id?: string | null
+          id?: string
+          nome: string
+          nome_empresa: string
+          observacao_admin?: string | null
+          qtd_consultoras?: string | null
+          segmento?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          telefone?: string | null
+        }
+        Update: {
+          aprovado_por?: string | null
+          como_conheceu?: string | null
+          created_at?: string
+          email?: string
+          empresa_id?: string | null
+          id?: string
+          nome?: string
+          nome_empresa?: string
+          observacao_admin?: string | null
+          qtd_consultoras?: string | null
+          segmento?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          telefone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_leads_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solicitacoes_ajuste: {
         Row: {
           admin_comentario: string | null
@@ -1448,6 +1504,7 @@ export type Database = {
       coach_diretriz_tipo: "permitido" | "proibido"
       cobranca_evento_tipo: "tentativa_contato" | "pagamento_confirmado"
       cobranca_status: "pendente" | "em_contato" | "pago"
+      lead_status: "novo" | "aprovado" | "rejeitado"
       notificacao_cobranca_tipo: "lembrete" | "cobranca" | "atraso"
       operador_regra:
         | "contem"
@@ -1603,6 +1660,7 @@ export const Constants = {
       coach_diretriz_tipo: ["permitido", "proibido"],
       cobranca_evento_tipo: ["tentativa_contato", "pagamento_confirmado"],
       cobranca_status: ["pendente", "em_contato", "pago"],
+      lead_status: ["novo", "aprovado", "rejeitado"],
       notificacao_cobranca_tipo: ["lembrete", "cobranca", "atraso"],
       operador_regra: ["contem", "igual", "comeca_com", "termina_com", "regex"],
       regra_mes: ["DATA_LANCAMENTO", "DATA_INICIO"],
