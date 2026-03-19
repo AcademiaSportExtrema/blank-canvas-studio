@@ -147,8 +147,8 @@ const FAQ_ITEMS = [
     a: "Você exporta a planilha do seu ERP (formato XLS) e faz o upload diretamente na plataforma. O sistema aplica regras automáticas para classificar cada lançamento.",
   },
   {
-    q: "Posso testar antes de assinar?",
-    a: "Sim! Oferecemos 30 dias de teste grátis com acesso completo a todas as funcionalidades do plano Pro.",
+    q: "Como solicito o cadastro?",
+    a: "Basta clicar em 'Solicitar cadastro' e preencher o formulário. Nossa equipe entrará em contato para liberar seu acesso.",
   },
   {
     q: "Meus dados estão seguros?",
@@ -156,13 +156,12 @@ const FAQ_ITEMS = [
   },
   {
     q: "Posso gerenciar mais de uma loja?",
-    a: "Sim, no plano Enterprise você gerencia múltiplas unidades em uma única plataforma, com dados totalmente isolados entre elas.",
+    a: "Sim, você gerencia múltiplas unidades em uma única plataforma, com dados totalmente isolados entre elas.",
   },
 ];
 
 const NAV_LINKS = [
   { label: "Recursos", href: "#recursos" },
-  { label: "Preços", href: "#precos" },
   { label: "FAQ", href: "#faq" },
 ];
 
@@ -195,7 +194,7 @@ const LandingPage = () => {
               <Link to="/login">Login</Link>
             </Button>
             <Button className={`${COLORS.accentBg} ${COLORS.accentBgHover} text-black font-semibold text-sm`} asChild>
-              <Link to="/cadastro">Teste grátis — 30 dias</Link>
+              <Link to="/cadastro">Solicitar cadastro</Link>
             </Button>
           </div>
 
@@ -223,7 +222,7 @@ const LandingPage = () => {
                 <Link to="/login">Login</Link>
               </Button>
               <Button className={`${COLORS.accentBg} text-black font-semibold`} asChild>
-                <Link to="/cadastro">Teste grátis — 30 dias</Link>
+                <Link to="/cadastro">Solicitar cadastro</Link>
               </Button>
             </div>
           </div>
@@ -259,7 +258,7 @@ const LandingPage = () => {
               asChild
             >
               <Link to="/cadastro">
-                Teste grátis — 30 dias
+                Solicitar cadastro
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -318,64 +317,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ══════ PRICING ══════ */}
-      <section id="precos" className="px-6 pb-20 scroll-mt-24">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Comece a ver resultados em menos de 7 dias
-          </h2>
-          <p className={`text-center ${COLORS.textSecondary} mb-8 max-w-xl mx-auto`}>
-            Teste grátis por 30 dias. Sem cartão de crédito, sem compromisso.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.name}
-                className={`rounded-2xl p-8 border transition ${
-                  plan.highlighted
-                    ? `${COLORS.accentBorder} ${COLORS.bgCard} ${COLORS.accentGlow}`
-                    : `${COLORS.border} ${COLORS.bgCard}`
-                }`}
-              >
-                {"badge" in plan && plan.badge && (
-                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${COLORS.accentBg} text-black mb-4`}>
-                    {plan.badge}
-                  </div>
-                )}
-                <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                <p className={`text-sm ${COLORS.textSecondary} mb-5`}>{plan.subtitle}</p>
-
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">{plan.priceLabel}</span>
-                  <span className={`text-sm ${COLORS.textSecondary}`}>{plan.priceSuffix}</span>
-                </div>
-
-                <Button
-                  className={`w-full mb-6 ${
-                    plan.highlighted
-                      ? `${COLORS.accentBg} ${COLORS.accentBgHover} text-black font-semibold`
-                      : "bg-white/10 hover:bg-white/15 text-white"
-                  }`}
-                  asChild
-                >
-                  <Link to="/cadastro">Teste grátis — 30 dias</Link>
-                </Button>
-
-                <ul className="space-y-3">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm">
-                      <Check className="h-4 w-4 text-[hsl(174,72%,56%)] mt-0.5 shrink-0" />
-                      <span className={COLORS.textSecondary}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ══════ TESTIMONIALS ══════ */}
       <section className="px-6 pb-20">
         <div className="mx-auto max-w-5xl grid md:grid-cols-2 gap-6">
@@ -426,10 +367,10 @@ const LandingPage = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-[hsl(174,72%,56%,0.08)] to-transparent pointer-events-none" />
           <div className="relative">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Você está a 30 dias de ter uma equipe que bate meta sozinha
+              Pronto para ter uma equipe que bate meta sozinha?
             </h2>
             <p className={`${COLORS.textSecondary} mb-8 max-w-lg mx-auto`}>
-              Comece agora, sem cartão de crédito. Veja os resultados antes de pagar.
+              Solicite seu cadastro e comece a ver resultados.
             </p>
             <Button
               size="lg"
@@ -437,7 +378,7 @@ const LandingPage = () => {
               asChild
             >
               <Link to="/cadastro">
-                Teste grátis — 30 dias
+                Solicitar cadastro
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -455,7 +396,6 @@ const LandingPage = () => {
 
           <div className={`flex items-center gap-6 text-sm ${COLORS.textSecondary}`}>
             <a href="#recursos" className="hover:text-white transition">Recursos</a>
-            <a href="#precos" className="hover:text-white transition">Preços</a>
             <a href="#faq" className="hover:text-white transition">FAQ</a>
             <Link to="/login" className="hover:text-white transition">Login</Link>
           </div>
