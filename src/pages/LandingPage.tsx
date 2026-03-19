@@ -396,7 +396,6 @@ const LandingPage = () => {
 
           <div className={`flex items-center gap-6 text-sm ${COLORS.textSecondary}`}>
             <a href="#recursos" className="hover:text-white transition">Recursos</a>
-            <a href="#precos" className="hover:text-white transition">Preços</a>
             <a href="#faq" className="hover:text-white transition">FAQ</a>
             <Link to="/login" className="hover:text-white transition">Login</Link>
           </div>
