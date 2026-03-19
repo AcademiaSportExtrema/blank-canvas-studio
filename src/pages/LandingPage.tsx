@@ -317,64 +317,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ══════ PRICING ══════ */}
-      <section id="precos" className="px-6 pb-20 scroll-mt-24">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Comece a ver resultados em menos de 7 dias
-          </h2>
-          <p className={`text-center ${COLORS.textSecondary} mb-8 max-w-xl mx-auto`}>
-            Teste grátis por 30 dias. Sem cartão de crédito, sem compromisso.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.name}
-                className={`rounded-2xl p-8 border transition ${
-                  plan.highlighted
-                    ? `${COLORS.accentBorder} ${COLORS.bgCard} ${COLORS.accentGlow}`
-                    : `${COLORS.border} ${COLORS.bgCard}`
-                }`}
-              >
-                {"badge" in plan && plan.badge && (
-                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${COLORS.accentBg} text-black mb-4`}>
-                    {plan.badge}
-                  </div>
-                )}
-                <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                <p className={`text-sm ${COLORS.textSecondary} mb-5`}>{plan.subtitle}</p>
-
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">{plan.priceLabel}</span>
-                  <span className={`text-sm ${COLORS.textSecondary}`}>{plan.priceSuffix}</span>
-                </div>
-
-                <Button
-                  className={`w-full mb-6 ${
-                    plan.highlighted
-                      ? `${COLORS.accentBg} ${COLORS.accentBgHover} text-black font-semibold`
-                      : "bg-white/10 hover:bg-white/15 text-white"
-                  }`}
-                  asChild
-                >
-                  <Link to="/cadastro">Teste grátis — 30 dias</Link>
-                </Button>
-
-                <ul className="space-y-3">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm">
-                      <Check className="h-4 w-4 text-[hsl(174,72%,56%)] mt-0.5 shrink-0" />
-                      <span className={COLORS.textSecondary}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ══════ TESTIMONIALS ══════ */}
       <section className="px-6 pb-20">
         <div className="mx-auto max-w-5xl grid md:grid-cols-2 gap-6">
