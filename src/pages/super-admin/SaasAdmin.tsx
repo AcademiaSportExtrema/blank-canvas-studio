@@ -55,6 +55,10 @@ export default function SaasAdmin() {
           <UsoIaContent />
         </TabsContent>
 
+        <TabsContent value="leads">
+          <LeadsContent />
+        </TabsContent>
+
         <TabsContent value="integracoes">
           <IntegracoesTab />
         </TabsContent>
