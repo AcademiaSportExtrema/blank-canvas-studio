@@ -1,11 +1,12 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building, Users, DollarSign, Plug, BrainCircuit } from 'lucide-react';
+import { Building, Users, DollarSign, Plug, BrainCircuit, UserPlus } from 'lucide-react';
 import EmpresasContent from '@/components/super-admin/EmpresasContent';
 import UsuariosContent from '@/components/super-admin/UsuariosContent';
 import FinanceiroContent from '@/components/super-admin/FinanceiroContent';
 import { IntegracoesTab } from '@/components/configuracao/IntegracoesTab';
 import UsoIaContent from '@/components/super-admin/UsoIaContent';
+import LeadsContent from '@/components/super-admin/LeadsContent';
 
 export default function SaasAdmin() {
   return (
