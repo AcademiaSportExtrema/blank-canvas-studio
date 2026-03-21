@@ -52,7 +52,6 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Use getClaims instead of getUser to avoid session expiry issues
     const userClient = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -62,7 +61,6 @@ Deno.serve(async (req) => {
 
     const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
-    // Verify admin role
     const { data: userRole } = await supabaseAdmin
       .from("user_roles")
       .select("empresa_id, role")
@@ -79,14 +77,12 @@ Deno.serve(async (req) => {
     const uploadId = body.upload_id || null;
     const triggerEmail = body.trigger_email === true;
 
-    // Current month
     const now = new Date();
     const mesAtual = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     const diasNoMes = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const diaAtual = now.getDate();
     const diasRestantes = diasNoMes - diaAtual;
 
-    // Fetch meta mensal using admin client to avoid RLS issues
     const { data: metaMensal } = await supabaseAdmin
       .from("metas_mensais")
       .select("*")
@@ -94,14 +90,12 @@ Deno.serve(async (req) => {
       .eq("empresa_id", empresaId)
       .single();
 
-    // Fetch consultoras ativas
     const { data: consultoras } = await supabaseAdmin
       .from("consultoras")
       .select("*")
       .eq("empresa_id", empresaId)
       .eq("ativo", true);
 
-    // Fetch metas por consultora
     let metasConsultoras: any[] = [];
     if (metaMensal) {
       const { data } = await supabaseAdmin
@@ -111,7 +105,6 @@ Deno.serve(async (req) => {
       metasConsultoras = data || [];
     }
 
-    // Fetch lancamentos do mês
     const { data: lancamentos } = await supabaseAdmin
       .from("lancamentos")
       .select("*")
@@ -124,7 +117,6 @@ Deno.serve(async (req) => {
     const metaTotal = metaMensal ? Number(metaMensal.meta_total) : 0;
     const percentualGeral = metaTotal > 0 ? (totalVendido / metaTotal) * 100 : 0;
 
-    // Fetch commission levels
     let niveisComissao: any[] = [];
     if (metaMensal) {
       const { data } = await supabaseAdmin
@@ -135,7 +127,6 @@ Deno.serve(async (req) => {
       niveisComissao = data || [];
     }
 
-    // Build per-consultora data
     const porConsultora: Record<string, { nome: string; valor: number; qtd: number }> = {};
     for (const l of vendas) {
       const chave = l.consultora_chave || "Não identificado";
@@ -179,7 +170,6 @@ Deno.serve(async (req) => {
       )
       .join("\n");
 
-    // Projeção
     const vendaDiaria = diaAtual > 0 ? totalVendido / diaAtual : 0;
     const projecaoMes = vendaDiaria * diasNoMes;
 
@@ -208,7 +198,8 @@ Limite sua resposta a no máximo 500 palavras.`;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Streaming call
+    // When trigger_email is true, use NON-STREAMING mode so email dispatch
+    // completes before the response is returned to the client.
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -221,7 +212,7 @@ Limite sua resposta a no máximo 500 palavras.`;
           { role: "system", content: systemPrompt },
           { role: "user", content: "Gere o relatório executivo do mês com base nos dados fornecidos." },
         ],
-        stream: true,
+        stream: !triggerEmail,
       }),
     });
 
@@ -243,7 +234,50 @@ Limite sua resposta a no máximo 500 palavras.`;
       });
     }
 
-    // We stream to the client AND collect the full text to save
+    // ─── NON-STREAMING MODE (trigger_email = true) ───
+    if (triggerEmail) {
+      const aiJson = await aiResponse.json();
+      const fullContent = aiJson.choices?.[0]?.message?.content || "";
+
+      if (fullContent) {
+        const tokensEstimados = Math.ceil(fullContent.length / 4);
+        await supabaseAdmin.from("ai_usage_logs").insert({
+          empresa_id: empresaId,
+          funcao: "ai-analista",
+          user_id: userId,
+          tokens_estimados: tokensEstimados,
+          modelo: "google/gemini-3-flash-preview",
+        });
+
+        const { error: saveError } = await supabaseAdmin.from("analise_ia").upsert(
+          {
+            empresa_id: empresaId,
+            mes_referencia: mesAtual,
+            conteudo: fullContent,
+            upload_id: uploadId,
+            created_at: new Date().toISOString(),
+          },
+          { onConflict: "empresa_id,mes_referencia" }
+        );
+
+        if (saveError) {
+          console.error("Failed to save analysis:", saveError);
+        } else {
+          console.log(`[ai-analista] Triggering email dispatch for empresa=${empresaId}`);
+          try {
+            await triggerAnaliseEmailDispatch({ supabaseUrl, serviceKey, empresaId });
+          } catch (emailErr) {
+            console.error("[ai-analista] Email dispatch threw:", emailErr);
+          }
+        }
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── STREAMING MODE (dashboard / manual) ───
     const reader = aiResponse.body!.getReader();
     const decoder = new TextDecoder();
     let fullContent = "";
@@ -256,9 +290,7 @@ Limite sua resposta a no máximo 500 palavras.`;
             const { done, value } = await reader.read();
             if (done) break;
             const chunk = decoder.decode(value, { stream: true });
-            // Forward chunk to client
             controller.enqueue(value);
-            // Parse for saving
             textBuffer += chunk;
             let newlineIndex: number;
             while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
@@ -275,7 +307,6 @@ Limite sua resposta a no máximo 500 palavras.`;
               } catch { /* partial */ }
             }
           }
-          // Flush remaining
           if (textBuffer.trim()) {
             for (const raw of textBuffer.split("\n")) {
               if (!raw || !raw.startsWith("data: ")) continue;
@@ -289,7 +320,6 @@ Limite sua resposta a no máximo 500 palavras.`;
             }
           }
 
-          // Log AI usage
           if (fullContent) {
             const tokensEstimados = Math.ceil(fullContent.length / 4);
             await supabaseAdmin.from("ai_usage_logs").insert({
@@ -298,14 +328,9 @@ Limite sua resposta a no máximo 500 palavras.`;
               user_id: userId,
               tokens_estimados: tokensEstimados,
               modelo: "google/gemini-3-flash-preview",
-            }).then(({ error: usageErr }) => {
-              if (usageErr) console.error("Failed to log AI usage:", usageErr);
             });
-          }
 
-          // Save analysis to DB using service role (bypass RLS)
-          if (fullContent) {
-            const { error: saveError } = await supabaseAdmin.from("analise_ia").upsert(
+            await supabaseAdmin.from("analise_ia").upsert(
               {
                 empresa_id: empresaId,
                 mes_referencia: mesAtual,
@@ -315,21 +340,6 @@ Limite sua resposta a no máximo 500 palavras.`;
               },
               { onConflict: "empresa_id,mes_referencia" }
             );
-
-            if (saveError) {
-              console.error("Failed to save analysis:", saveError);
-            } else if (triggerEmail) {
-              console.log(`[ai-analista] Triggering email dispatch for empresa=${empresaId}`);
-              try {
-                await triggerAnaliseEmailDispatch({
-                  supabaseUrl,
-                  serviceKey,
-                  empresaId,
-                });
-              } catch (emailErr) {
-                console.error("[ai-analista] Email dispatch threw:", emailErr);
-              }
-            }
           }
 
           controller.close();
